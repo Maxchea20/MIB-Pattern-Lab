@@ -57,3 +57,17 @@ the candle shapes are identical either way.
 
 ## Charts
 Candlesticks + price axis + time axis only, fixed style (`config.CHART_STYLE`), byte-deterministic PNGs.
+
+## Stage 2: OpenAI visual discovery (descriptions only)
+```
+copy .env.example .env        # then put your key in .env (git-ignored)
+python -m src.discovery.discover --dry-run      # builds charts, shows the exact request, NO API call
+python -m src.discovery.discover --count 200    # real run, model = config.OPENAI_MODEL
+```
+* **Held-out data:** candles at/after `config.DISCOVERY_END` (2026-06-01 UTC) are removed *before*
+  any window is built. Discovery never sees them; they are reserved for blind/out-of-sample validation.
+* **Outcome-blind:** the model gets only the PNG + a fixed prompt (`src/discovery/prompts.py`). No
+  timestamp, filename or outcome. The prompt is versioned and hashed in every result row.
+* **Output:** `results/discovery/descriptions.jsonl` (one row per chart: model, prompt hash, image
+  hash, raw + parsed response, token usage) and `report.html`. Runs are resumable; failed charts are
+  retried on the next run. No clustering, pattern families or backtest yet.

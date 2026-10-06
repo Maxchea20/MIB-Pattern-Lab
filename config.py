@@ -54,3 +54,12 @@ CHART_STYLE = {
     # Candle shapes are identical either way (always drawn normalized).
     "axis_labels": "raw",    # candles between time-axis labels
 }
+
+# --- Stage 2: OpenAI visual discovery --------------------------------------
+# Discovery may only ever see candles BEFORE this instant (UTC, exclusive). Everything
+# at/after it is the held-out period for later blind / out-of-sample validation.
+DISCOVERY_END = "2026-06-01T00:00:00Z"
+DISCOVERY_COUNT = 200                  # charts sent to the model (each one costs API money)
+DISCOVERY_SEED = None                  # None = evenly spaced across the discovery period
+OPENAI_MODEL = "gpt-5.4-mini"
+DISCOVERY_DIR = ROOT / "results" / "discovery"
