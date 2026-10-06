@@ -16,14 +16,29 @@ import re
 
 from src.exp5m import params
 
-# Words that must not appear in prompts or in the discovered vocabulary (names + definitions).
-FORBIDDEN = frozenset("""
-trend trends trending uptrend downtrend breakout breakouts breakdown breakdowns bos choch support resistance fvg
-liquidity sweep sweeps indicator indicators volume rsi macd atr ema sma bollinger doji hammer engulfing harami
-marubozu setup setups signal signals buy sell long short bullish bearish bull bear momentum pullback retracement
-reversal reversals continuation consolidation accumulation distribution impulse correction profit loss outcome
-outcomes forward future predict prediction forecast favorable trade trades trading entry exit
+# --- Two different rules --------------------------------------------------------------------------------------
+# (1) PROMPT RULE (original instruction): the prompts themselves must not name technical-analysis concepts, so the
+#     model is not primed to look for them. Every template is linted against PROMPT_FORBIDDEN.
+# (2) VOCABULARY RULE (user decision 6): the discovered family names/definitions may use natural structural words
+#     (trend, breakout, reversal, impulse, consolidation, pullback, ...). They are rejected ONLY if they
+#       (a) prescribe or imply a trading decision, an outcome interpretation or a market-sentiment bias, or
+#       (b) refer to things that are not visually present in a clean chart (indicators, volume, drawn levels).
+#     Judgment calls: bullish/bearish/bull/bear stay forbidden (sentiment, not geometry); support/resistance stay
+#     forbidden (inferred levels that are not drawn). We never add pattern names or concepts ourselves.
+VOCAB_FORBIDDEN = frozenset("""
+buy buys buying sell sells selling long longs short shorts entry entries exit exits target targets
+profit profits profitable profitability winning winner trade trades trading trader signal signals setup setups
+bullish bearish bull bear
+outcome outcomes forward future predict predicts prediction forecast favorable favourable
+volume indicator indicators rsi macd atr ema sma bollinger liquidity fvg bos choch support resistance
 """.split())
+VOCAB_FORBIDDEN_PHRASES = (r"stop[\s_]*loss", r"take[\s_]*profit")
+
+PROMPT_FORBIDDEN = frozenset("""
+trend trends trending uptrend downtrend breakout breakouts breakdown breakdowns sweep sweeps doji hammer engulfing
+harami marubozu momentum pullback retracement reversal reversals continuation consolidation accumulation
+distribution impulse correction
+""".split()) | VOCAB_FORBIDDEN
 
 D1_SYSTEM = (
     "You are a careful visual analyst. You are shown a single chart image made of candles. Describe ONLY what is "
@@ -88,14 +103,26 @@ def template_hashes() -> dict[str, str]:
     return {k: hashlib.sha256(v.encode()).hexdigest() for k, v in TEMPLATES.items()}
 
 
+def _tokens(text: str) -> list[str]:
+    return re.findall(r"[a-z]+", text.lower())
+
+
 def lint(text: str) -> list[str]:
-    """Forbidden words found in `text` (tokens split on non-letters, so snake_case names are checked word by word)."""
-    return sorted({t for t in re.findall(r"[a-z]+", text.lower()) if t in FORBIDDEN})
+    """VOCABULARY lint: forbidden words/phrases found in a family name or definition (snake_case split into words)."""
+    low = text.lower()
+    hits = {t for t in _tokens(low) if t in VOCAB_FORBIDDEN}
+    hits |= {m.group(0).replace("_", " ") for pat in VOCAB_FORBIDDEN_PHRASES for m in re.finditer(pat, low)}
+    return sorted(hits)
+
+
+def lint_prompt(text: str) -> list[str]:
+    """PROMPT lint (stricter): the prompt templates must not name technical-analysis concepts either."""
+    return sorted({t for t in _tokens(text) if t in PROMPT_FORBIDDEN} | set(lint(text)))
 
 
 def lint_templates() -> dict[str, list[str]]:
-    """Lint every template (placeholders are not words, so they never trigger)."""
-    return {k: lint(v) for k, v in TEMPLATES.items()}
+    """Lint every prompt template (placeholders are not words, so they never trigger)."""
+    return {k: lint_prompt(v) for k, v in TEMPLATES.items()}
 
 
 # --------------------------------------------------------------- D2 output validation -------------------------

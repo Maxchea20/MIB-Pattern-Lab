@@ -106,7 +106,7 @@ def test_d2_input_is_deterministic_and_normalised(run_dir):
 
 def test_d2_retries_with_feedback_then_freezes_vocabulary_once(run_dir, tmp_path):
     d5.run_d1(run_dir, FakeImage(d1_ok))
-    bad = {"families": [fam(n) for n in NAMES[:-1]] + [fam("upward_trend")]}                # forbidden word
+    bad = {"families": [fam(n) for n in NAMES[:-1]] + [fam("buy_signal")]}                # forbidden words
     caller = FakeText([bad, good_vocab_json()])
     vp = tmp_path / "vocab.json"
     v = d5.run_d2(run_dir, caller, vp)
@@ -114,7 +114,7 @@ def test_d2_retries_with_feedback_then_freezes_vocabulary_once(run_dir, tmp_path
     assert len(caller.prompts) == 2 and "rejected" not in caller.prompts[0] and "rejected" in caller.prompts[1]
     assert prompts5m.lint(caller.prompts[0]) == []                                          # first prompt is lint-clean
     attempts = io5m.load_jsonl(run_dir / "d2_attempts.jsonl")
-    assert [a["accepted"] for a in attempts] == [False, True] and "trend" in " ".join(attempts[0]["problems"])
+    assert [a["accepted"] for a in attempts] == [False, True] and "buy" in " ".join(attempts[0]["problems"])
     rec = json.loads(vp.read_text())
     assert rec["sha256"] == v.sha256 and rec["attempt_accepted"] == 2 and d5.load_vocabulary(vp).sha256 == v.sha256
     with pytest.raises(SystemExit, match="already exists"):

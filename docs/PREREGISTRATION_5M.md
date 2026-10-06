@@ -1,9 +1,9 @@
 # Pre-registration — MIB Pattern Lab, Experiment 2: BTC/USDT 5M visual-pattern discovery
 
-**Status: DRAFT v1 — NOT FROZEN.** It becomes the frozen design when `docs/PREREG_5M_DESIGN_LOCK.json` is written
-(section 14), which happens after the open decisions in section 13 are answered and the data coverage has been
-re-verified. **No 5M outcome has been computed or looked at.** No 5M discovery sample has been generated and no
-5M AI discovery call has been made under this design.
+**Status: DRAFT v2 — all six open decisions are answered (section 13); awaiting a final read-through by the user.
+NOT FROZEN.** It becomes the frozen design only when `docs/PREREG_5M_DESIGN_LOCK.json` is written (section 11, step 3),
+which happens **after** the user has read the final text. **No 5M outcome has been computed or looked at.** No 5M
+discovery sample has been generated and no 5M AI discovery call has been made under this design.
 
 ## 0. Relationship to the archived 1H experiment
 * The 1H experiment is **archived and untouched**: `docs/PREREGISTRATION.md`, `docs/PREREG_LOCK.json`,
@@ -21,7 +21,8 @@ Can AI discover recurring visual patterns in clean historical price charts that 
 price movement? This is pure research: no conventional technical-analysis strategy, no entry/exit/FIRE/Hunt/S1/S2/
 execution/live-trading logic, no TP/SL, fees, leverage or sizing. The models are never told to look for trend,
 breakout, BOS, CHoCH, support/resistance, FVG, liquidity, indicators, volume, candlestick names, setups or buy/sell
-signals; prompts and the discovered vocabulary are language-linted for these (section 6).
+signals. The prompts are linted so that they never name such concepts, and the discovered vocabulary is linted so that
+it cannot prescribe a trade (section 6).
 
 ## 2. Data (verified by `python -m src.exp5m.coverage` on the real database)
 Source: `market_Data_Clean.db`, table `candles`, `symbol = BTC_USDT`, `timeframe = 5m`. Result of the verification run
@@ -73,8 +74,8 @@ Source: `market_Data_Clean.db`, table `candles`, `symbol = BTC_USDT`, `timeframe
   (seed 12345, 40) of D1 summaries, and groups the **recurring** shapes into **6–10 visually distinct families**,
   writing each family's name and one-sentence visual definition (≤25 words). We do not write or rename any family.
   No forbidden-word list is shown to the model up front (that would itself prime it). The output is accepted only if it
-  passes validation (6–10 families, snake_case, unique, `none` reserved, ≤25-word definitions) **and the language lint**
-  (no forbidden word in any name or definition). On failure the same call is repeated up to 3 times with the reasons
+  passes validation (6–10 families, snake_case, unique, `none` reserved, ≤25-word definitions) **and the vocabulary lint**
+  (section 6: no trade-decision / outcome / non-visible term in any name or definition). On failure the same call is repeated up to 3 times with the reasons
   (including the offending words) appended; every attempt is stored. If all fail, the experiment stops
   and is reported; nothing is fixed by hand.
 * **Freeze the vocabulary** (`docs/5m/VOCABULARY_5M.json`, sha256 recorded) **before** step D3 and before any outcome code
@@ -86,13 +87,24 @@ Source: `market_Data_Clean.db`, table `candles`, `symbol = BTC_USDT`, `timeframe
 * The model sees only the image and the fixed prompt: no timestamp, filename, price level, forward data or outcome.
   The discovery code cannot import the outcome code (test-enforced).
 
-## 6. Language lint (applies to all prompts and to the discovered vocabulary)
-Forbidden words include: trend, breakout/breakdown, BOS, CHoCH, support, resistance, FVG, liquidity, sweep, indicator(s),
-volume, RSI, MACD, ATR, EMA/SMA, Bollinger, named candlestick patterns (doji, hammer, engulfing, harami, marubozu),
-setup, signal, buy, sell, long, short, bullish, bearish, momentum, pullback, retracement, reversal, continuation,
-consolidation, accumulation, distribution, impulse, correction, plus outcome words (profit, loss, outcome, forward,
-future, predict, forecast, favourable, trade, entry, exit). Names such as `sideways_range`, `drift_up`, `drift_down`
-are allowed because they describe appearance only. The full list is in `prompts5m.py` and is hash-locked.
+## 6. Language lint (two different rules; both hash-locked in `prompts5m.py`)
+The purpose of the lint is to stop visual discovery from turning into explicit trading instructions or outcome
+interpretation. It is **not** meant to stop the model from naturally describing visual structure.
+* **Prompt rule (unchanged from the original instruction).** The three prompts themselves must not name technical-analysis
+  concepts (trend, breakout, support/resistance, indicators, volume, candlestick names, setups, buy/sell signals, ...),
+  so that the model is not primed to look for them. Every template is checked against the strict list.
+* **Vocabulary rule (user decision 6).** The model-written family names and definitions **may use natural structural words**
+  (for example trend, breakout, reversal, impulse, consolidation, pullback, momentum, correction, candlestick-shape
+  words). A name or definition is rejected **only** if it contains a word that
+  (a) prescribes or implies a **trading decision, an outcome interpretation or a market-sentiment bias**: buy, sell, long,
+  short, entry, exit, target, stop loss, take profit, profit/profitable, winning/winner, trade/trading, signal, setup,
+  bullish, bearish, bull, bear, outcome, forward, future, predict(ion), forecast, favo(u)rable; or
+  (b) refers to something that is **not visually present in a clean chart**: volume, indicator(s), RSI, MACD, ATR, EMA, SMA,
+  Bollinger, liquidity, FVG, BOS, CHoCH, support, resistance (inferred levels are not drawn).
+  Judgment calls: bullish/bearish stay rejected because they express sentiment rather than geometry; `long` and `short`
+  are rejected as listed by the user, even though they could describe a wick or candle size (such a name is rejected
+  and the consolidation call is repeated, see section 5). `sideways_range`, `drift_up`, `drift_down` are accepted.
+* We never add pattern names or concepts ourselves; the lint only rejects, it never edits.
 
 ## 7. Families and the confirmatory set
 * A family = one frozen vocabulary name. A window may belong to several (stable tags). Windows with no stable tag (or
@@ -152,26 +164,33 @@ effect ≥ 50% of discovery). If nothing passes in discovery, **no hold-out is m
 8. Interpretation only after step 7. Hold-out only under section 10.
 After a freeze, no change to prompts, vocabulary, families, window rules, thresholds, horizons or code is allowed.
 
-## 12. Limitations (stated up front)
+## 12. Limitations (stated up front; items marked REQUIRED must appear in the final report)
+* **REQUIRED — population of inference.** The 4.3% causal-span constraint excludes approximately 1,762 candidate windows
+  (2.66% of the candidate population). Therefore, conclusions from the 600-window discovery experiment apply only to the
+  sampled population within the causal-span constraint and do not establish behavior for those excluded high-span
+  windows. (The pipeline generates this sentence from the real funnel numbers into `sample_meta.json`
+  (`limitation_statement`); the final report reproduces it verbatim.)
 * About 13 months, a single market regime: a result here says nothing about other regimes.
 * Power depends on the number of families that reach N ≥ 30 and on their sizes; with many confirmatory cells the
   maxT correction reduces power. INCONCLUSIVE / LOW POWER is a likely and acceptable outcome.
-* Excluding windows wider than the span removes the most extreme windows: **2.66% of post-calibration windows (1,762) are
-  wider than 4.3% and can never be sampled**, so nothing here speaks about those periods.
 * Vocabulary names come from the model; their quality is not guaranteed (but they are frozen before any outcome).
+* The `long`/`short` rejection (section 6) can force a re-run of the consolidation call for purely visual uses of those words.
 
-## 13. OPEN DECISIONS (to confirm before the design lock)
-1. **Vocabulary source:** induce a new vocabulary via D1→D2 (written here), instead of reusing the 1H `vocab-v1`
-   (which contains breakout/reversal-style names).
-2. **Causal span via a 28-day calibration prefix** (the first four weeks are not used for discovery windows).
-3. **Split:** discovery before 2026-06-01; hold-out only if a PASS occurs.
-4. **Size and cost:** N = 600 windows; D1 on ~300; D3 = 600 × 2 passes. Estimated API cost about $2 (to be confirmed
-   against the actual account balance).
-5. **Confirmatory rule:** every family with ≥ 30 forward-valid windows is confirmatory (cap 6–10 families).
-6. **Language lint list** (section 6), including a few words beyond the user's list (reversal, impulse, consolidation, …).
+## 13. Decisions recorded (all confirmed by the user)
+1. **New vocabulary: CONFIRMED.** D1 → D2 independently induce the 5M vocabulary; the 1H vocabulary is not reused.
+2. **Causal span: CONFIRMED.** The 28-day calibration prefix (2025-09-15 19:05 → 2025-10-13 19:05 UTC) sets the 4.3% span; it
+   lies strictly before the discovery period; discovery windows start after it.
+3. **Chronology: CONFIRMED.** Discovery data is before 2026-06-01. The hold-out may only be used if a discovery family first
+   passes the pre-registered criteria.
+4. **Discovery sample: CONFIRMED.** 600 windows, deterministic and stratified as specified, about $2 with the cost cap enforced.
+5. **Confirmatory threshold: CONFIRMED.** Every discovered family with at least 30 windows is confirmatory; smaller families
+   remain exploratory.
+6. **Language lint: CHANGED.** `reversal`, `impulse`, `consolidation` (and the other structural words) are no longer forbidden;
+   the vocabulary lint targets trade-prescribing, outcome-interpreting and non-visible terms only (section 6). The
+   span-exclusion limitation is preserved (section 12, REQUIRED). Everything else stays as designed.
 
 ## 14. Audit trail (produced by the pipeline; all hash-recorded)
-Database file hash and coverage report; exact window construction and parameters (`params.py`); chart style hash and the
+Database file hash and coverage report; the limitation statement; exact window construction and parameters (`params.py`); chart style hash and the
 calibration span; the sampling funnel and exclusions; `windows5m.jsonl` hash and number of windows; model name, prompt
 template hashes, D1 descriptions, D2 attempts, frozen vocabulary and its hash; D3 tags (two passes); seeds (12345,
 20240601; sampling is deterministic); outcome horizons; the statistical tests and B values; analysis-code freeze hash;

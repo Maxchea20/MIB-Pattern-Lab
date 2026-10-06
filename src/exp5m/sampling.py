@@ -34,6 +34,10 @@ from src.discovery.tagset import file_sha256
 from src.exp5m import params
 
 OUT_DIR = config.ROOT / "results" / "exp5m" / "discovery"
+LIMITATION_TEMPLATE = (
+    "The {span:g}% causal-span constraint excludes approximately {n:,} candidate windows ({pct:.2f}% of the candidate "
+    "population). Therefore, conclusions from the {n_sel}-window discovery experiment apply only to the sampled "
+    "population within the causal-span constraint and do not establish behavior for those excluded high-span windows.")
 LABELS = ["Q1_quiet", "Q2", "Q3", "Q4_active"]
 
 
@@ -136,6 +140,8 @@ def build(df: pd.DataFrame, out_dir: Path, render: bool = True):
             "funnel": funnel, "n_target": params.N_TARGET, "n_selected": len(picks), "per_stratum": by,
             "first_window_end": picks[0][0].isoformat() if picks else None,
             "last_window_end": picks[-1][0].isoformat() if picks else None, "chart_style_sha256": style_sha(span)}
+    n_ex, n_pop = funnel["excluded_wider_than_span"], funnel["start_after_calibration"]
+    meta["limitation_statement"] = LIMITATION_TEMPLATE.format(span=span, n=n_ex, pct=100.0 * n_ex / max(n_pop, 1), n_sel=len(picks))
     if not render:
         return meta, []
     cs = CandleSet(d, params.SYMBOL, params.TIMEFRAME, "exp5m")

@@ -122,13 +122,29 @@ def test_build_renders_clean_deterministic_windows(small_design, monkeypatch, tm
 
 
 # ------------------------------------------------------------------- prompts + lint -------------------------------
-def test_prompts_are_free_of_forbidden_language():
-    assert all(v == [] for v in prompts5m.lint_templates().values())
-    vocab_text = " ".join(prompts5m.TEMPLATES.values()).lower()
-    for w in ("trend", "breakout", "support", "resistance", "volume", "indicator", "signal", "buy", "sell", "outcome"):
-        assert w not in vocab_text.split() and w not in prompts5m.lint(vocab_text)
-    assert prompts5m.lint("a sharp_reversal then an uptrend with high volume") == ["reversal", "uptrend", "volume"]
-    assert prompts5m.lint("sideways_range drift_up drift_down stair_step") == []
+def test_prompts_name_no_technical_concepts_and_no_trade_words():
+    assert all(v == [] for v in prompts5m.lint_templates().values())          # strict PROMPT rule
+    words = " ".join(prompts5m.TEMPLATES.values()).lower()
+    for w in ("trend", "breakout", "support", "resistance", "volume", "indicator", "signal", "buy", "sell", "outcome",
+              "reversal", "impulse", "consolidation", "pullback", "momentum"):
+        assert w not in words.split() and w not in prompts5m.lint_prompt(words)
+    assert prompts5m.lint_prompt("an uptrend then a reversal") == ["reversal", "uptrend"]   # prompts may not name them
+
+
+def test_vocabulary_lint_allows_structure_words_and_rejects_trade_decisions():
+    allowed = ["upward_trend", "breakout_from_band", "reversal_arch", "consolidation_band", "impulse_rise",
+               "pullback_step", "sideways_range", "drift_up", "momentum_burst", "correction_dip", "doji_like_cluster"]
+    for t in allowed:
+        assert prompts5m.lint(t) == [], t
+    rejected = {"buy_zone": "buy", "sell_off": "sell", "long_wick": "long", "short_candles": "short", "entry_point": "entry",
+                "exit_leg": "exit", "target_hit": "target", "profitable_rise": "profitable", "winning_arch": "winning",
+                "trade_range": "trade", "signal_spike": "signal", "bullish_arch": "bullish", "bearish_slide": "bearish",
+                "volume_surge": "volume", "rsi_dip": "rsi", "support_line": "support", "resistance_cap": "resistance",
+                "good_forward_move": "forward", "predicts_rise": "predicts"}
+    for text, word in rejected.items():
+        assert word in prompts5m.lint(text), text
+    assert prompts5m.lint("a stop loss below the band") == ["stop loss"] and prompts5m.lint("take_profit_zone") == ["profit", "take profit"]
+    assert prompts5m.lint("price stops falling then rises") == []                  # natural verbs are not blocked
 
 
 def fam(name, definition="price moves in a narrow band with small candles"):
@@ -139,11 +155,18 @@ def test_validate_families_accepts_good_and_rejects_bad():
     good = {"families": [fam(n) for n in ("sideways_range", "drift_up", "drift_down", "steep_fall", "steep_rise", "arch_shape")]}
     fams, probs = prompts5m.validate_families(good)
     assert probs == [] and len(fams) == 6
+    natural = {"families": [fam(n, d) for n, d in [("upward_trend", "price rises steadily across most of the window"),
+                                                    ("breakout_from_band", "a flat band followed by a sharp move out of it"),
+                                                    ("reversal_arch", "a rise followed by a fall of similar size"),
+                                                    ("consolidation_band", "small candles in a narrow band"),
+                                                    ("impulse_rise", "a few large candles rising together"),
+                                                    ("sideways_range", "price moves up and down within a band")]]}
+    assert prompts5m.validate_families(natural)[1] == []                          # structural words are accepted
     cases = {
         "too few": {"families": [fam("a_b")] * 3},
         "too many": {"families": [fam(f"shape_{i}") for i in range(11)]},
-        "forbidden word in name": {"families": [fam(n) for n in ("sideways_range", "drift_up", "drift_down", "steep_fall", "steep_rise", "upward_trend")]},
-        "forbidden word in definition": {"families": [fam(n) for n in ("a_one", "b_two", "c_three", "d_four", "e_five")] + [fam("f_six", "a breakout from a flat band")]},
+        "forbidden word in name": {"families": [fam(n) for n in ("sideways_range", "drift_up", "drift_down", "steep_fall", "steep_rise", "buy_zone")]},
+        "forbidden word in definition": {"families": [fam(n) for n in ("a_one", "b_two", "c_three", "d_four", "e_five")] + [fam("f_six", "a good entry after a flat band")]},
         "duplicate": {"families": [fam("same_name")] * 6},
         "reserved none": {"families": [fam(n) for n in ("none", "b_two", "c_three", "d_four", "e_five", "f_six")]},
         "bad snake_case": {"families": [fam(n) for n in ("Bad Name", "b_two", "c_three", "d_four", "e_five", "f_six")]},
@@ -205,3 +228,18 @@ def test_design_lock_detects_changes_and_requires_confirmation(tmp_path, monkeyp
     monkeypatch.setattr(params, "N_TARGET", 601)                                            # a parameter change is caught too
     with pytest.raises(SystemExit, match="MISMATCH"):
         lock5m.require_design_lock(sha12)
+
+
+def test_span_limitation_statement_is_generated_from_the_real_funnel(small_design, monkeypatch, tmp_path):
+    monkeypatch.setattr(params, "N_TARGET", 12)
+    meta, _ = sampling.build(series(), None, render=False)
+    f = meta["funnel"]
+    txt = meta["limitation_statement"]
+    assert f"{f['excluded_wider_than_span']:,} candidate windows" in txt and f"{meta['span_pct']:g}% causal-span" in txt
+    assert "apply only to the sampled population within the causal-span constraint" in txt
+    assert "do not establish behavior for those excluded high-span windows" in txt
+    pct = 100 * f["excluded_wider_than_span"] / f["start_after_calibration"]
+    assert f"({pct:.2f}% of the candidate population)" in txt
+    ex = sampling.LIMITATION_TEMPLATE.format(span=4.3, n=1762, pct=100 * 1762 / 66240, n_sel=600)
+    assert ex.startswith("The 4.3% causal-span constraint excludes approximately 1,762 candidate windows (2.66% of the candidate population).")
+    assert "conclusions from the 600-window discovery experiment" in ex
