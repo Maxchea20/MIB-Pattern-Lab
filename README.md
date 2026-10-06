@@ -107,3 +107,12 @@ stratified by window range (equal counts per quartile; uses only chart size, no 
 are not population frequencies. Token use is recorded per call; the run stops *between charts* when the
 projected spend would pass the cap, and re-running resumes. Prices in `config.OPENAI_PRICE_USD_PER_M`
 come from third-party pricing pages - verify them on your OpenAI dashboard.
+
+### Label audit (free, no outcomes)
+```
+python -m src.discovery.audit --run-dir results/discovery/tagset_v1
+```
+Computes simple window-only features (net move, range, efficiency, biggest 5-candle rise/fall, where the
+high/low sit, last-10 move) for every tagged window and shows their mean per stable tag. Use it to check
+that tag names match the geometry (e.g. `drift_down` should have negative net move) and that the AI tags
+add information beyond net move / range.

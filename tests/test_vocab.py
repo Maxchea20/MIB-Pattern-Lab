@@ -6,7 +6,7 @@ import pytest
 import config
 from src.discovery import vocab, vocab_report
 from src.discovery.retag import load_rows, run_retag
-from tests.test_discovery import FakeDescriber  # noqa: F401  (fixture helpers)
+from tests.test_discovery import FakeDescriber, cs_long  # noqa: F401  (fixture helpers)
 
 
 def _png(tmp_path, name, content):
@@ -140,3 +140,24 @@ def test_stratified_pick_balanced_deterministic_and_unique():
     assert min(b - x for x, b in zip(c, c[1:])) >= pd.Timedelta(minutes=300)
     with pytest.raises(ValueError):
         pick(r, idx, 5, "bogus")
+
+
+def test_audit_features_use_window_only_and_are_sane(cs_long):
+    from src.charts.windows import build_window as bw
+    from src.discovery import audit
+    T = cs_long.df["ts"].iloc[300]
+    w = bw(cs_long, T, 60)
+    f = audit.window_features(w.raw)
+    fut = cs_long.df.copy()
+    fut.loc[fut["ts"] > T, ["open", "high", "low", "close"]] = 1e9
+    assert audit.window_features(bw(type(cs_long)(fut, "BTC/USDT", "5m", "x"), T, 60).raw) == f
+    assert 0 <= f["eff"] <= 1 and 0 <= f["hi_pos"] <= 1 and f["range_pct"] > 0
+    tags = {T.isoformat(): ["drift_up"], cs_long.df["ts"].iloc[500].isoformat(): ["sideways_range"]}
+    rows = []
+    for ts, tg in tags.items():
+        for p in (1, 2):
+            rows.append({"end_ts": ts, "pass": p, "tags": tg, "error": None})
+    st = audit.stable_tags(rows)
+    assert st == {k: v for k, v in tags.items()}
+    table = audit.summarise(audit.build_table(cs_long, st))
+    assert table["tag"].tolist()[0] == "ALL WINDOWS" and set(table["tag"]) >= {"drift_up", "sideways_range"}
