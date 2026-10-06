@@ -71,3 +71,11 @@ python -m src.discovery.discover --count 200    # real run, model = config.OPENA
 * **Output:** `results/discovery/descriptions.jsonl` (one row per chart: model, prompt hash, image
   hash, raw + parsed response, token usage) and `report.html`. Runs are resumable; failed charts are
   retried on the next run. No clustering, pattern families or backtest yet.
+
+### Discovery chart scale and labels (run `v2_fixed_scale_anon`)
+* **Fixed scale:** one vertical span (in %) for every discovery chart = 99th percentile of window
+  ranges in the discovery period (never held-out data), rounded up to 0.05%. Windows wider than the
+  span (~1%) are excluded from sampling instead of being clipped. Saved in `scale.json`.
+* **Anonymised axes:** price axis = % vs. close at T; time axis = candle offsets `T-50 ... T`. No dates
+  or absolute prices reach the model (it cannot recognise real BTC history from labels).
+* Results go to `results/discovery/<DISCOVERY_RUN>/`, so earlier runs with different images are never mixed in.

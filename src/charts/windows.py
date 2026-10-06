@@ -51,10 +51,11 @@ def valid_end_timestamps(cs: CandleSet, lookback: int) -> pd.DatetimeIndex:
     return pd.DatetimeIndex(cs.df["ts"].iloc[idx])
 
 
-def sample_end_timestamps(cs: CandleSet, lookback: int, count: int, seed=None) -> list[pd.Timestamp]:
+def sample_end_timestamps(cs: CandleSet, lookback: int, count: int, seed=None,
+                          ends=None) -> list[pd.Timestamp]:
     """Pick `count` window-end timestamps. seed=None: evenly spaced across all history
     (deterministic); otherwise a seeded random sample (sorted)."""
-    ends = valid_end_timestamps(cs, lookback)
+    ends = valid_end_timestamps(cs, lookback) if ends is None else pd.DatetimeIndex(ends)
     if len(ends) == 0:
         raise ValueError("No valid windows available")
     count = min(count, len(ends))

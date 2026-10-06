@@ -26,7 +26,7 @@ import config
 from src.charts.renderer import chart_filename, render_window
 from src.charts.windows import build_window, sample_end_timestamps
 from src.data.loader import CandleSet, load_candles
-from src.discovery import prompts
+from src.discovery import prompts, scale
 
 
 # ------------------------------------------------------------------ safety --
@@ -107,26 +107,43 @@ def done_keys(jsonl: Path) -> set[str]:
     return out
 
 
+def plan(dcs: CandleSet, count: int, seed, lookback: int):
+    """Fixed span from discovery data, eligible windows, sampled ends, chart style."""
+    ranges = scale.window_ranges_pct(dcs.df, dcs.timeframe, lookback)
+    span = scale.choose_span(ranges)
+    elig = scale.eligible_ends(ranges, span)
+    ends = sample_end_timestamps(dcs, lookback, count, seed, ends=elig)
+    style = {**config.DISCOVERY_CHART_STYLE, "y_span_pct": span}
+    info = {"span_pct": span, "span_quantile": config.SPAN_QUANTILE, "windows_total": len(ranges),
+            "windows_eligible": len(elig), "chart_style": {**config.CHART_STYLE, **style}}
+    info["chart_style_sha256"] = hashlib.sha256(
+        json.dumps(info["chart_style"], sort_keys=True, default=str).encode()).hexdigest()
+    return ends, style, info
+
+
 def run(cs: CandleSet, describer, out_dir: Path, count: int, seed=None, lookback=None) -> list[dict]:
     lookback = lookback or config.LOOKBACK
     dcs = discovery_candles(cs)
-    ends = sample_end_timestamps(dcs, lookback, count, seed)
+    ends, style, info = plan(dcs, count, seed, lookback)
     assert all(t < pd.Timestamp(config.DISCOVERY_END) for t in ends), "window beyond discovery cutoff"
     chart_dir = out_dir / "charts"
     jsonl = out_dir / "descriptions.jsonl"
     done = done_keys(jsonl)
     out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "scale.json").write_text(json.dumps(info, indent=2, default=str), encoding="utf-8")
+    print(f"fixed span {info['span_pct']}% | eligible windows {info['windows_eligible']}/{info['windows_total']}")
     for i, t in enumerate(ends, 1):
         if t.isoformat() in done:
             print(f"[{i}/{len(ends)}] skip {t} (already described)")
             continue
         w = build_window(dcs, t, lookback)
-        png = render_window(w, chart_dir / chart_filename(w)).read_bytes()
+        png = render_window(w, chart_dir / chart_filename(w), style).read_bytes()
         rec = {"end_ts": t.isoformat(), "chart": chart_filename(w), "symbol": w.symbol,
                "timeframe": w.timeframe, "lookback": lookback,
                "model": getattr(describer, "model", None), "prompt_version": prompts.PROMPT_VERSION,
                "prompt_sha256": prompts.PROMPT_SHA256,
                "image_sha256": hashlib.sha256(png).hexdigest(),
+               "chart_style_sha256": info["chart_style_sha256"], "run": config.DISCOVERY_RUN,
                "requested_at": pd.Timestamp.now(tz="UTC").isoformat(),
                "parsed": None, "raw": None, "usage": None, "error": None}
         try:
@@ -177,7 +194,7 @@ def main(argv=None) -> int:
     ap.add_argument("--count", type=int, default=config.DISCOVERY_COUNT)
     ap.add_argument("--seed", type=int, default=config.DISCOVERY_SEED)
     ap.add_argument("--model", default=config.OPENAI_MODEL)
-    ap.add_argument("--out", default=str(config.DISCOVERY_DIR))
+    ap.add_argument("--out", default=str(config.DISCOVERY_DIR / config.DISCOVERY_RUN))
     ap.add_argument("--dry-run", action="store_true", help="build charts and print the request; no API call")
     a = ap.parse_args(argv)
 
@@ -185,13 +202,15 @@ def main(argv=None) -> int:
     out = Path(a.out)
     if a.dry_run:
         dcs = discovery_candles(cs)
-        ends = sample_end_timestamps(dcs, config.LOOKBACK, a.count, a.seed)
+        ends, style, info = plan(dcs, a.count, a.seed, config.LOOKBACK)
         w = build_window(dcs, ends[0], config.LOOKBACK)
-        png = render_window(w, out / "charts" / chart_filename(w)).read_bytes()
+        png = render_window(w, out / "charts" / chart_filename(w), style).read_bytes()
         msgs = build_messages(png)
         msgs[1]["content"][1]["image_url"]["url"] = msgs[1]["content"][1]["image_url"]["url"][:60] + "...(truncated)"
         print(f"model: {a.model}\ndiscovery period: {dcs.df['ts'].iloc[0]} -> {dcs.df['ts'].iloc[-1]} "
               f"(cutoff {config.DISCOVERY_END}, {len(dcs.df)} candles)\n"
+              f"run: {config.DISCOVERY_RUN} -> {out}\nfixed span {info['span_pct']}% (eligible windows "
+              f"{info['windows_eligible']}/{info['windows_total']}); axes: {config.DISCOVERY_CHART_STYLE}\n"
               f"would send {len(ends)} charts, from {ends[0]} to {ends[-1]}\n"
               f"prompt {prompts.PROMPT_VERSION} sha {prompts.PROMPT_SHA256[:12]}\n"
               f"--- first request (no timestamp, no filename, no outcome) ---")

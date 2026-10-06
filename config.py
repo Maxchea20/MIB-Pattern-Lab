@@ -52,7 +52,9 @@ CHART_STYLE = {
     "xtick_every": 10,
     # Right-axis labels: "raw" = real prices (e.g. 94,250), "pct" = % vs close at T.
     # Candle shapes are identical either way (always drawn normalized).
-    "axis_labels": "raw",    # candles between time-axis labels
+    "axis_labels": "raw",
+    "time_labels": "datetime",   # "datetime" (real dates) or "relative" (T-50 ... T)
+    "y_span_pct": None,          # None = fit each chart to its own range; number = fixed span in %    # candles between time-axis labels
 }
 
 # --- Stage 2: OpenAI visual discovery --------------------------------------
@@ -62,4 +64,11 @@ DISCOVERY_END = "2026-06-01T00:00:00Z"
 DISCOVERY_COUNT = 200                  # charts sent to the model (each one costs API money)
 DISCOVERY_SEED = None                  # None = evenly spaced across the discovery period
 OPENAI_MODEL = "gpt-5.4-mini"
+# Discovery charts: fixed vertical scale (same % span for every chart), and NO dates / absolute
+# prices (price axis = % vs close at T, time axis = candle offset from T). Changing any of this
+# changes the images, so bump DISCOVERY_RUN: results go to results/discovery/<DISCOVERY_RUN>/.
+DISCOVERY_RUN = "v2_fixed_scale_anon"
+DISCOVERY_CHART_STYLE = {"axis_labels": "pct", "time_labels": "relative"}
+SPAN_QUANTILE = 0.99      # fixed span = this quantile of window ranges in the discovery period
+SPAN_STEP_PCT = 0.05      # span rounded UP to a multiple of this
 DISCOVERY_DIR = ROOT / "results" / "discovery"

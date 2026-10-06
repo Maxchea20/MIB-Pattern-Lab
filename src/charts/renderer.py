@@ -22,6 +22,26 @@ def chart_filename(w: Window) -> str:
     return f"{sym}_{w.timeframe}_{w.end_ts.strftime('%Y%m%dT%H%M%SZ')}.png"
 
 
+def compute_ylim(norm, st) -> tuple[float, float]:
+    """Y limits in normalized % units. y_span_pct set -> fixed span centred on the window's own
+    mid-range (same scale for every chart); otherwise fit the window with padding."""
+    lo, hi = float(norm["low"].min()), float(norm["high"].max())
+    span = st.get("y_span_pct")
+    if span:
+        mid = (lo + hi) / 2
+        return mid - span / 2, mid + span / 2
+    pad = (hi - lo) * st["y_pad_frac"] or 0.01
+    return lo - pad, hi + pad
+
+
+def xtick_labels(d, ticks, st) -> list[str]:
+    if st["time_labels"] == "relative":
+        return ["T" if i == len(d) - 1 else f"T{i - (len(d) - 1)}" for i in ticks]
+    if st["time_labels"] == "datetime":
+        return [d["ts"].iloc[i].strftime("%m-%d\n%H:%M") for i in ticks]
+    raise ValueError(f"time_labels must be 'datetime' or 'relative', got {st['time_labels']!r}")
+
+
 def render_window(w: Window, path, style: dict | None = None) -> Path:
     st = {**config.CHART_STYLE, **(style or {})}
     n = st["xtick_every"]
@@ -36,13 +56,11 @@ def render_window(w: Window, path, style: dict | None = None) -> Path:
         lo, hi = sorted((r["open"], r["close"]))
         ax.add_patch(Rectangle((i - bw / 2, lo), bw, max(hi - lo, 1e-9),
                                facecolor=color, edgecolor=color, linewidth=0.5, zorder=3))
-    lo, hi = float(d["low"].min()), float(d["high"].max())
-    pad = (hi - lo) * st["y_pad_frac"] or 0.01
-    ax.set_ylim(lo - pad, hi + pad)
+    ax.set_ylim(*compute_ylim(d, st))
     ax.set_xlim(-1, len(d))
     ticks = list(range(len(d) - 1, -1, -n))[::-1]           # anchored on candle T
     ax.set_xticks(ticks)
-    ax.set_xticklabels([d["ts"].iloc[i].strftime("%m-%d\n%H:%M") for i in ticks], fontsize=8)
+    ax.set_xticklabels(xtick_labels(d, ticks, st), fontsize=8)
     ax.yaxis.tick_right()
     if st["axis_labels"] == "raw":
         ref = float(w.raw["close"].iloc[-1])      # close at T: the inverse of the normalization

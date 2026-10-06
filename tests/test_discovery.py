@@ -97,3 +97,55 @@ def test_env_loader_does_not_override(tmp_path, monkeypatch):
     discover.load_env(p)
     import os
     assert os.environ["OPENAI_API_KEY"] == "abc" and os.environ["OTHER"] == "keep"
+
+
+# ---- fixed scale / anonymised axes -------------------------------------------------------
+from src.charts.renderer import compute_ylim, xtick_labels
+from src.discovery import scale
+
+
+def test_fixed_span_same_for_every_window(cs_long):
+    a = build_window(cs_long, cs_long.df["ts"].iloc[100], L)
+    b = build_window(cs_long, cs_long.df["ts"].iloc[700], L)
+    st = {**config.CHART_STYLE, "y_span_pct": 8.0}
+    for w in (a, b):
+        lo, hi = compute_ylim(w.norm, st)
+        assert hi - lo == pytest.approx(8.0)
+        assert lo <= w.norm["low"].min() and hi >= w.norm["high"].max()   # window fits when range <= span
+
+
+def test_span_from_discovery_period_only_and_eligibility(cs_long):
+    d = discover.discovery_candles(cs_long)
+    r = scale.window_ranges_pct(d.df, "5m", L)
+    assert r.index.max() < pd.Timestamp(CUT)
+    span = scale.choose_span(r)
+    assert span >= r.quantile(0.99)
+    assert (span / config.SPAN_STEP_PCT) == pytest.approx(round(span / config.SPAN_STEP_PCT))
+    elig = scale.eligible_ends(r, span)
+    assert 0 < len(elig) <= len(r) and (r.loc[elig] <= span).all()
+    # tiny window is excluded from the sample, never clipped
+    assert len(scale.eligible_ends(r, r.min() / 2)) == 0
+
+
+def test_range_uses_only_window_data(cs_long):
+    d = cs_long.df
+    r1 = scale.window_ranges_pct(d, "5m", L)
+    f = d.copy()
+    f.loc[500:, ["open", "high", "low", "close"]] = 1e9          # change the future
+    r2 = scale.window_ranges_pct(f, "5m", L)
+    t = d["ts"].iloc[400]
+    assert r1.loc[t] == r2.loc[t]
+
+
+def test_relative_time_labels_hide_dates(cs_long):
+    w = build_window(cs_long, cs_long.df["ts"].iloc[300], L)
+    st = {**config.CHART_STYLE, **config.DISCOVERY_CHART_STYLE}
+    labels = xtick_labels(w.norm, list(range(59, -1, -10))[::-1], st)
+    assert labels[-1] == "T" and labels[0] == "T-50" and not any("-0" in x or ":" in x for x in labels)
+    assert st["axis_labels"] == "pct"
+
+
+def test_run_writes_scale_style_hash_and_tags_run(cs_long, tmp_path):
+    res = discover.run(cs_long, FakeDescriber(), tmp_path, count=3)
+    assert (tmp_path / "scale.json").exists()
+    assert all(r["run"] == config.DISCOVERY_RUN and len(r["chart_style_sha256"]) == 64 for r in res)
