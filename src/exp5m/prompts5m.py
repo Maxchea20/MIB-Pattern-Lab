@@ -57,7 +57,7 @@ SAMPLE DESCRIPTIONS
 Group the recurring shapes into between {k_min} and {k_max} families that look clearly different from each other.
 Rules:
 - Each family name is lowercase snake_case and describes appearance only.
-- Do not use any of these words in names or definitions: {banned}
+- Use only plain geometric words that describe appearance.
 - Each family has a one-sentence visual definition (at most 25 words) that a person could apply to a new chart by looking at it.
 - Families must cover shapes that recur; ignore one-off names.
 - Do not mention anything other than what is visible in a chart.
@@ -160,3 +160,7 @@ class Vocabulary:
             return None, None, "'none' must be used alone"
         primary = str(obj.get("primary", tags[0])).strip()
         return (tags, primary, None) if primary in tags else (None, None, f"primary {primary!r} not in tags")
+
+
+RETRY_SUFFIX = ("\n\nYour previous answer was rejected for these reasons: {problems}\n"
+                "Return a corrected JSON object that follows all the rules.")

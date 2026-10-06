@@ -23,17 +23,16 @@ execution/live-trading logic, no TP/SL, fees, leverage or sizing. The models are
 breakout, BOS, CHoCH, support/resistance, FVG, liquidity, indicators, volume, candlestick names, setups or buy/sell
 signals; prompts and the discovered vocabulary are language-linted for these (section 6).
 
-## 2. Data (to be re-verified by `python -m src.exp5m.coverage` before the lock)
-Source: `market_Data_Clean.db`, table `candles`, `symbol = BTC_USDT`, `timeframe = 5m`.
-Known from the earlier read-only inspection (reproduced and extended by the coverage tool; the tool's JSON,
-`docs/5m/COVERAGE_REPORT.json`, is hash-locked and overrides these figures if they differ):
-* 111,068 rows; earliest 2025-09-15 19:05 UTC; latest 2026-10-06 10:40 UTC; 0 duplicates; 0 missing candles;
-  0 invalid OHLC rows.
-* Timestamps are epoch values interpreted as **UTC**; the candle timestamp is its **open** time (verified on 9,255
-  overlapping 1h candles: `1h.open == 5m.open` at the same timestamp, 100%; 0% at -55m).
-* The coverage tool additionally reports: grid alignment (all timestamps multiples of 300 s), gaps, per-month counts,
-  the stored timestamp unit and what the loader keeps. The loader drops the last stored candle (it may have been
-  written mid-candle) and keeps only closed, valid, de-duplicated candles.
+## 2. Data (verified by `python -m src.exp5m.coverage` on the real database)
+Source: `market_Data_Clean.db`, table `candles`, `symbol = BTC_USDT`, `timeframe = 5m`. Result of the verification run
+(its full JSON is `docs/5m/COVERAGE_REPORT.json`, hash-locked in the design lock):
+* 111,068 rows, 111,068 unique timestamps, **0 duplicates**; earliest **2025-09-15 19:05 UTC**, latest
+  **2026-10-06 10:40 UTC**; expected on the 5-minute grid 111,068 → **0 missing candles, 0 gaps, 0 off-grid timestamps,
+  0 invalid OHLC rows**.
+* Timestamps are stored as epoch **seconds** and interpreted as **UTC**; the timestamp is the candle's **open** time
+  (verified on 9,255 overlapping 1h candles: `1h.open == 5m.open` at the same timestamp 100.0%, at -55m 0.0%).
+* The loader drops the last stored candle (it may have been written mid-candle) → **111,067 usable closed candles**;
+  it keeps only closed, valid, de-duplicated candles.
 * Coverage is **~13 months, one market regime** (limitation, section 12).
 
 ## 3. Visual windows, charts and causal normalisation
@@ -45,7 +44,7 @@ Known from the earlier read-only inspection (reproduced and extended by the cove
   No absolute BTC price appears. **Time axis:** relative offsets `T-50 … T` (no dates).
 * **Causal fixed vertical span.** One span (in %) is used for every chart: the 99th percentile of window ranges
   (`max high − min low`, as % of the close at T) over windows lying entirely inside the **calibration prefix** — the first
-  28 days of data — rounded up to a multiple of 0.05%. The span therefore uses **no information from after any
+  28 days of data — rounded up to a multiple of 0.05%. (Dry-run on the real data: calibration prefix ends 2025-10-13 19:05 UTC; span = **4.3%**.) The span therefore uses **no information from after any
   discovery window's end**; every discovery window starts after the prefix. Windows wider than the span are
   **excluded and counted, never clipped**. No future high/low/volatility enters any normalisation.
   (The archived 1H experiment learned its span from the whole discovery period, which is not strictly causal; it is
@@ -60,8 +59,11 @@ Known from the earlier read-only inspection (reproduced and extended by the cove
   stratum contributes N/4 windows, **spread evenly over time**, never closer than 60 candles (**no overlaps**).
   Non-overlap plus even time spread is the de-duplication. `N_TARGET = 600` (same order of magnitude as the 1H
   discovery sample of 452). If fewer fit, N is whatever fits and is reported; shortfall is not back-filled.
-* The funnel (windows total → gap-free → after calibration → span → forward path → candidates → selected, per stratum)
-  is written to `sample_meta.json`. The selected list is `windows5m.jsonl` (sha256 recorded in the discovery lock).
+* Dry-run on the real data (deterministic, so the build reproduces it): 74,363 closed candles before the cutoff → 74,304
+  gap-free windows → 66,240 start after the calibration prefix → **1,762 (2.66%) wider than the 4.3% span, excluded**
+  → 24 without a complete forward path → **64,454 candidates** → **600 selected (150 per stratum)**, first window end
+  2025-10-14 00:00, last 2026-05-31 21:55 (UTC). About 1,100 non-overlapping windows fit in total, so N=600 is not forced.
+  The funnel is written to `sample_meta.json`. The selected list is `windows5m.jsonl` (sha256 recorded in the discovery lock).
   Code: `src/exp5m/sampling.py`. Seeds: none needed (the procedure is deterministic).
 
 ## 5. AI discovery — outcome-blind, three steps (model `gpt-5.4-mini`; prompts in `src/exp5m/prompts5m.py`)
@@ -70,9 +72,10 @@ Known from the earlier read-only inspection (reproduced and extended by the cove
 * **D2 – vocabulary consolidation (one call).** The model receives the D1 shape names with counts and a seeded sample
   (seed 12345, 40) of D1 summaries, and groups the **recurring** shapes into **6–10 visually distinct families**,
   writing each family's name and one-sentence visual definition (≤25 words). We do not write or rename any family.
-  The output is accepted only if it passes validation (6–10 families, snake_case, unique, `none` reserved, ≤25-word
-  definitions) **and the language lint** (no forbidden word in any name or definition). On failure the same call is
-  repeated up to 3 times with the failed checks appended; every attempt is stored. If all fail, the experiment stops
+  No forbidden-word list is shown to the model up front (that would itself prime it). The output is accepted only if it
+  passes validation (6–10 families, snake_case, unique, `none` reserved, ≤25-word definitions) **and the language lint**
+  (no forbidden word in any name or definition). On failure the same call is repeated up to 3 times with the reasons
+  (including the offending words) appended; every attempt is stored. If all fail, the experiment stops
   and is reported; nothing is fixed by hand.
 * **Freeze the vocabulary** (`docs/5m/VOCABULARY_5M.json`, sha256 recorded) **before** step D3 and before any outcome code
   runs. No family is merged, split or renamed afterwards.
@@ -134,14 +137,18 @@ PASS / DOES NOT PASS / INCONCLUSIVE verdict (same-sign, one-sided p < 0.05/(#dis
 effect ≥ 50% of discovery). If nothing passes in discovery, **no hold-out is manufactured**.
 
 ## 11. Fixed order of work and freezes
-1. Verify coverage (`coverage.py`) → commit `docs/5m/COVERAGE_REPORT.json`.
+1. Verify coverage (done: see section 2) → commit `docs/5m/COVERAGE_REPORT.json`.
 2. Answer the open decisions (section 13); finalise this document.
 3. **Design lock** (`python -m src.exp5m.lock5m --write`): hashes of this document, `params.py`, `sampling.py`,
-   `prompts5m.py`, `coverage.py`, the coverage report, parameters, prompt templates, and proof the 1H archive is intact.
-4. Generate the discovery sample (`sampling.py --build`; refuses without the design lock) → `windows5m.jsonl`.
-5. D1 descriptions → D2 vocabulary → **freeze vocabulary** → D3 tagging (two passes).
-6. **Discovery lock:** sample, vocabulary, tags, model/prompt hashes, confirmatory set, N per family, exclusions.
-7. Build and freeze the 5M outcome wrapper (new freeze file); run the outcome analysis **once**; report.
+   `prompts5m.py`, `coverage.py`, `io5m.py`, `discover5m.py` (the whole discovery pipeline), the coverage report, all
+   parameters, the prompt templates, and proof that the 1H archive is intact. Every later step refuses to run if any
+   of it changed.
+4. Generate the discovery sample: `sampling --build --confirm-design-sha <12>` → `windows5m.jsonl`, charts, `sample_meta.json`.
+5. `discover5m d1` (descriptions) → `discover5m d2` (vocabulary; **frozen**, `docs/5m/VOCABULARY_5M.json`) →
+   `discover5m d3` (two-pass classification). All cost-capped and resumable.
+6. **Discovery lock** (`lock5m --stage discovery --write` → `docs/PREREG_5M_DISCOVERY_LOCK.json`): sample, vocabulary,
+   tags, model/prompt hashes, N per family, the **confirmatory set** (families with N ≥ 30) and exclusions. Tag counts only.
+7. Build and freeze the 5M outcome wrapper (its own freeze file); run the outcome analysis **once**; report.
 8. Interpretation only after step 7. Hold-out only under section 10.
 After a freeze, no change to prompts, vocabulary, families, window rules, thresholds, horizons or code is allowed.
 
@@ -149,7 +156,8 @@ After a freeze, no change to prompts, vocabulary, families, window rules, thresh
 * About 13 months, a single market regime: a result here says nothing about other regimes.
 * Power depends on the number of families that reach N ≥ 30 and on their sizes; with many confirmatory cells the
   maxT correction reduces power. INCONCLUSIVE / LOW POWER is a likely and acceptable outcome.
-* Excluding windows wider than the span removes the most extreme windows (count reported).
+* Excluding windows wider than the span removes the most extreme windows: **2.66% of post-calibration windows (1,762) are
+  wider than 4.3% and can never be sampled**, so nothing here speaks about those periods.
 * Vocabulary names come from the model; their quality is not guaranteed (but they are frozen before any outcome).
 
 ## 13. OPEN DECISIONS (to confirm before the design lock)
