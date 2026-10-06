@@ -147,3 +147,14 @@ See `docs/PREREGISTRATION.md` section 13. The outcome module is built only after
 `docs/PREREG_LOCK.json` matches every frozen file, `docs/OUTCOME_CODE_FREEZE.json` matches the code, and the run
 is confirmed with the first 12 characters of the lock's pre-registration hash. Hold-out candles are removed before
 anything is read; the analysis completes once (`RUN_COMPLETE.json`). Standard library + numpy only (no scipy).
+
+## Experiment 2: 5M visual-pattern discovery (design in progress)
+The completed 1H experiment is archived and untouched. The 5M experiment has its own pre-registration
+(`docs/PREREGISTRATION_5M.md`, DRAFT until `docs/PREREG_5M_DESIGN_LOCK.json` exists) and its own code in `src/exp5m/`:
+```
+python -m src.exp5m.coverage                    # verify the 5M data actually in the database (read-only)
+python -m src.exp5m.sampling --dry-run          # funnel + deterministic sample plan (nothing rendered)
+python -m src.exp5m.lock5m --write              # freeze the design (after the open decisions are answered)
+python -m src.exp5m.sampling --build --confirm-design-sha <12 chars>   # generate the discovery sample + charts
+```
+Order of work, freezes and the outcome-blind discovery architecture are in section 11 of the 5M pre-registration.

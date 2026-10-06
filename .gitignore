@@ -26,3 +26,6 @@ results/discovery/*
 
 # derived per-window outcome data stays local
 results/outcomes/**/observations.csv
+
+# 5M experiment: generated chart images stay local (sample list / metadata are small and may be committed)
+results/exp5m/**/charts/
