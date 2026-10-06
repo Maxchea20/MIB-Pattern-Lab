@@ -121,3 +121,8 @@ add information beyond net move / range.
 `tagset`, `vocab_report` and `audit` take `--timeframe` (e.g. `15m`, `1h`). Each timeframe gets its own folder
 (`results/discovery/tagset_v1_15m`), its own fixed chart scale (computed from that timeframe's discovery
 windows), and windows are kept >= one full window apart. The prompt never mentions the timeframe.
+
+### Discovery / hold-out split per timeframe
+`config.DISCOVERY_END_BY_TF` overrides the cutoff per timeframe (1h: 2024-06-01, so ~2.3 years stay locked for
+validation). The split, and everything still to be fixed before any outcome is examined, is in
+`docs/PREREGISTRATION.md`. Runs with a custom cutoff get their own folder (e.g. `tagset_v1_1h_cut20240601`).

@@ -149,3 +149,13 @@ def test_run_writes_scale_style_hash_and_tags_run(cs_long, tmp_path):
     res = discover.run(cs_long, FakeDescriber(), tmp_path, count=3)
     assert (tmp_path / "scale.json").exists()
     assert all(r["run"] == config.DISCOVERY_RUN and len(r["chart_style_sha256"]) == 64 for r in res)
+
+
+def test_per_timeframe_cutoff_and_run_dir(cs_long, monkeypatch):
+    monkeypatch.setattr(config, "DISCOVERY_END_BY_TF", {"1h": "2026-05-31T12:00:00Z"})
+    assert config.discovery_end("1H") == "2026-05-31T12:00:00Z" and config.discovery_end("5m") == CUT
+    from src.discovery.tagset import default_run_dir
+    assert default_run_dir("1h").name.endswith("_cut20260531") and "cut" not in default_run_dir("5m").name
+    cs1h = CandleSet(cs_long.df, "BTC/USDT", "1h", "x")
+    d = discover.discovery_candles(cs1h)
+    assert d.df["ts"].max() < pd.Timestamp("2026-05-31T12:00:00Z") and d.stats["discovery_cutoff"].startswith("2026-05-31T12")

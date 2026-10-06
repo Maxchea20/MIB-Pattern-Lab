@@ -61,6 +61,18 @@ CHART_STYLE = {
 # Discovery may only ever see candles BEFORE this instant (UTC, exclusive). Everything
 # at/after it is the held-out period for later blind / out-of-sample validation.
 DISCOVERY_END = "2026-06-01T00:00:00Z"
+# Per-timeframe override of the discovery/hold-out split (UTC, exclusive). 1h has 6 years of history, so it
+# gets a bigger hold-out (2024-06-01 onward) than the ~13-month 5m/15m series. Fixed BEFORE any outcome
+# analysis - see docs/PREREGISTRATION.md.
+DISCOVERY_END_BY_TF = {"1h": "2024-06-01T00:00:00Z"}
+
+
+def discovery_end(timeframe=None) -> str:
+    """Cutoff for `timeframe` (falls back to DISCOVERY_END). Read dynamically (tests may patch it)."""
+    key = str(timeframe or TIMEFRAME).strip().lower()
+    return DISCOVERY_END_BY_TF.get(key, DISCOVERY_END)
+
+
 DISCOVERY_COUNT = 200                  # charts sent to the model (each one costs API money)
 DISCOVERY_SEED = None                  # None = evenly spaced across the discovery period
 OPENAI_MODEL = "gpt-5.4-mini"

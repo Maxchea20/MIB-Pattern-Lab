@@ -4,7 +4,7 @@
     python -m src.discovery.discover --count 200        # real run (needs OPENAI_API_KEY in .env)
 
 Safety rules enforced here:
-* Candles at/after config.DISCOVERY_END are removed BEFORE any window is built.
+* Candles at/after config.discovery_end(timeframe) are removed BEFORE any window is built.
 * The model receives only the PNG and the fixed prompt: no timestamp, filename, or outcome.
 * Results are appended to descriptions.jsonl with model, prompt version/hash, image hash;
   re-running skips charts already described (resumable).
@@ -32,7 +32,7 @@ from src.discovery import prompts, scale
 # ------------------------------------------------------------------ safety --
 def discovery_candles(cs: CandleSet, end=None) -> CandleSet:
     """Return a copy of `cs` with every candle at/after the discovery cutoff removed."""
-    cut = pd.Timestamp(end or config.DISCOVERY_END)
+    cut = pd.Timestamp(end or config.discovery_end(cs.timeframe))
     cut = cut.tz_localize("UTC") if cut.tzinfo is None else cut.tz_convert("UTC")
     df = cs.df[cs.df["ts"] < cut].reset_index(drop=True)
     if df.empty:
@@ -126,7 +126,7 @@ def run(cs: CandleSet, describer, out_dir: Path, count: int, seed=None, lookback
     lookback = lookback or config.LOOKBACK
     dcs = discovery_candles(cs)
     ends, style, info = plan(dcs, count, seed, lookback)
-    assert all(t < pd.Timestamp(config.DISCOVERY_END) for t in ends), "window beyond discovery cutoff"
+    assert all(t < pd.Timestamp(config.discovery_end(cs.timeframe)) for t in ends), "window beyond discovery cutoff"
     chart_dir = out_dir / "charts"
     jsonl = out_dir / "descriptions.jsonl"
     done = done_keys(jsonl)
@@ -209,7 +209,7 @@ def main(argv=None) -> int:
         msgs = build_messages(png)
         msgs[1]["content"][1]["image_url"]["url"] = msgs[1]["content"][1]["image_url"]["url"][:60] + "...(truncated)"
         print(f"model: {a.model}\ndiscovery period: {dcs.df['ts'].iloc[0]} -> {dcs.df['ts'].iloc[-1]} "
-              f"(cutoff {config.DISCOVERY_END}, {len(dcs.df)} candles)\n"
+              f"(cutoff {config.discovery_end(cs.timeframe)}, {len(dcs.df)} candles)\n"
               f"run: {config.DISCOVERY_RUN} -> {out}\nfixed span {info['span_pct']}% (eligible windows "
               f"{info['windows_eligible']}/{info['windows_total']}); axes: {config.DISCOVERY_CHART_STYLE}\n"
               f"would send {len(ends)} charts, from {ends[0]} to {ends[-1]}\n"

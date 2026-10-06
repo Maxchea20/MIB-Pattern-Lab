@@ -4,7 +4,7 @@
     python -m src.discovery.tagset                       # TAGSET_COUNT windows, RETAG_PASSES passes, budget-capped
     python -m src.discovery.tagset --count 300 --budget-usd 1.5
 
-* Only candles before config.DISCOVERY_END are used (held-out data is never read).
+* Only candles before config.discovery_end(timeframe) are used (held-out data is never read).
 * Same fixed-span, anonymised charts as the 50-chart run (style hash recorded).
 * Sampling "stratified": equal numbers of windows from each quartile of window range, so quiet windows
   do not crowd out the rarer large-move shapes. It uses ONLY the window's own size - no outcomes.
@@ -45,6 +45,8 @@ def default_run_dir(timeframe: str) -> Path:
     """5m keeps the original folder name; other timeframes get their own folder."""
     tf = tf_to_seconds(timeframe)
     name = config.TAGSET_RUN if tf == tf_to_seconds(config.TIMEFRAME) else f"{config.TAGSET_RUN}_{timeframe}"
+    if str(timeframe).strip().lower() in config.DISCOVERY_END_BY_TF:       # custom split -> its own folder
+        name += "_cut" + pd.Timestamp(config.discovery_end(timeframe)).strftime("%Y%m%d")
     return config.DISCOVERY_DIR / name
 
 
@@ -90,10 +92,11 @@ def prepare(cs, out_dir: Path, count: int, mode: str, render: bool = True):
     picks = pick(ranges, elig, count, mode, timeframe=dcs.timeframe)
     if len(picks) < count:
         print(f"WARNING: only {len(picks)} non-overlapping windows fit (requested {count}).")
-    assert all(t < pd.Timestamp(config.DISCOVERY_END) for t, _ in picks), "window beyond discovery cutoff"
+    cutoff = config.discovery_end(dcs.timeframe)
+    assert all(t < pd.Timestamp(cutoff) for t, _ in picks), "window beyond discovery cutoff"
     style = {**config.DISCOVERY_CHART_STYLE, "y_span_pct": span}
     info = {"span_pct": span, "windows_total": len(ranges), "windows_eligible": len(elig),
-            "sampling": mode, "count": len(picks), "timeframe": dcs.timeframe, "discovery_end": config.DISCOVERY_END,
+            "sampling": mode, "count": len(picks), "timeframe": dcs.timeframe, "discovery_end": cutoff,
             "chart_style": {**config.CHART_STYLE, **style}}
     info["chart_style_sha256"] = hashlib.sha256(
         json.dumps(info["chart_style"], sort_keys=True, default=str).encode()).hexdigest()
@@ -135,7 +138,7 @@ def main(argv=None) -> int:
         picks, info, _ = prepare(cs, out, a.count, a.sampling, render=False)
         by = pd.Series([s for _, s in picks]).value_counts().sort_index()
         print(f"run dir: {out}\ntimeframe {a.timeframe} ({config.LOOKBACK} candles/window)\nmodel {a.model} | vocab {vocab.VOCAB_VERSION} | passes {a.passes}\n"
-              f"discovery cutoff {config.DISCOVERY_END}; fixed span {info['span_pct']}% "
+              f"discovery cutoff {info["discovery_end"]}; fixed span {info['span_pct']}% "
               f"(eligible {info['windows_eligible']}/{info['windows_total']} windows)\n"
               f"{len(picks)} windows ({a.sampling}): {picks[0][0]} -> {picks[-1][0]}\n{by.to_string()}\n"
               f"API calls: {len(picks) * a.passes}; hard budget ${a.budget_usd:.2f} "
