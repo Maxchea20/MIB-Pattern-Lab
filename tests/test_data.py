@@ -11,7 +11,7 @@ from tests.conftest import make_ohlc
 
 def test_loader_discovers_schema_and_filters_btc_5m(synthetic_db):
     cs = load_candles(synthetic_db, "BTC/USDT", "5m", as_of="2100-01-01")
-    assert len(cs.df) == 399 && cs.stats["trailing_dropped"] == 1   # last stored candle dropped (may be forming)
+    assert len(cs.df) == 399 and cs.stats["trailing_dropped"] == 1   # last stored candle dropped (may be forming)
     assert cs.df["ts"].is_monotonic_increasing
     assert cs.df["ts"].diff().dropna().dt.total_seconds().eq(300).all()
 
