@@ -84,12 +84,12 @@ def test_retag_refuses_changed_image(run_dir):
 
 
 def test_stable_tags_and_recurrence(run_dir):
-    def plan(png, n):                     # call order: pass1 charts 0-5, pass2 charts 0-5
-        i = (n - 1) % 6
+    def plan(png, n):                     # call order (chart-outer): c0p1 c0p2 c1p1 c1p2 ...
+        i, pas = (n - 1) // 2, (n - 1) % 2 + 1
         if i < 4:
             return {"tags": ["sideways_range"]}                # always agrees -> recurring
         if i == 4:
-            return {"tags": ["sharp_drop"] if n <= 6 else ["v_reversal"]}   # passes disagree -> unstable
+            return {"tags": ["sharp_drop"] if pas == 1 else ["v_reversal"]}   # passes disagree -> unstable
         return {"tags": ["rounded_top"]}                       # only 1 chart -> below support
     run_retag(run_dir, Tagger(plan), passes=2)
     res = vocab_report.analyse(load_rows(run_dir / "retags.jsonl"), 2)
@@ -100,3 +100,36 @@ def test_stable_tags_and_recurrence(run_dir):
     assert c["rounded_top"]["stable_charts"] == 1 and not c["rounded_top"]["recurring"]
     assert res["primary_agreement"] == pytest.approx(5 / 6, abs=1e-3) and res["charts_with_no_stable_tag"] == 1
     assert vocab_report.write_report(run_dir, res).exists()
+
+
+def test_budget_stop_leaves_no_half_tagged_charts(run_dir):
+    class Costly(Tagger):
+        def describe(self, png):
+            r = super().describe(png)
+            r["usage"] = {"prompt": 100_000, "completion": 0}          # $0.075 per call at default prices
+            return r
+    t = Costly(lambda png, n: {"tags": ["sideways_range"]})
+    rows = run_retag(run_dir, t, passes=2, budget_usd=0.40)
+    per_chart = {}
+    for r in rows:
+        per_chart.setdefault(r["end_ts"], set()).add(r["pass"])
+    assert 0 < len(per_chart) < 6 and all(v == {1, 2} for v in per_chart.values())
+    from src.discovery import cost
+    assert cost.total_cost(rows) <= 0.40
+    assert cost.call_cost({"prompt": 1_000_000, "completion": 1_000_000}) == pytest.approx(5.25)
+
+
+def test_stratified_pick_balanced_deterministic_and_unique():
+    import numpy as np
+    import pandas as pd
+    from src.discovery.tagset import pick
+    idx = pd.date_range("2026-01-01", periods=4000, freq="5min", tz="UTC")
+    r = pd.Series(np.random.default_rng(1).uniform(0.2, 3, 4000), index=idx)
+    a = pick(r, idx, 100, "stratified")
+    assert a == pick(r, idx, 100, "stratified") and len(a) == 100 and len({t for t, _ in a}) == 100
+    assert [s for _, s in a].count("Q4_active") == 25 and [s for _, s in a].count("Q1_quiet") == 25
+    q1 = [r.loc[t] for t, s in a if s == "Q1_quiet"]; q4 = [r.loc[t] for t, s in a if s == "Q4_active"]
+    assert max(q1) < min(q4)
+    assert len(pick(r, idx, 50, "even")) == 50
+    with pytest.raises(ValueError):
+        pick(r, idx, 5, "bogus")

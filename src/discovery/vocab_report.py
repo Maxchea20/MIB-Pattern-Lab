@@ -56,6 +56,14 @@ def analyse(rows: list[dict], passes: int) -> dict:
             "vocab_version": vocab.VOCAB_VERSION, "vocab_sha256": vocab.VOCAB_SHA256}
 
 
+def sampling_note(run_dir: Path) -> str:
+    w = run_dir / "scale.json"
+    if w.exists() and json.loads(w.read_text(encoding="utf-8")).get("sampling") == "stratified":
+        return ("<p><b>Note:</b> this sample is stratified by window range (equal counts per quartile), so "
+                "shares are NOT population frequencies; active windows are over-represented.</p>")
+    return ""
+
+
 def write_report(run_dir: Path, res: dict) -> Path:
     (run_dir / "pattern_counts.json").write_text(json.dumps(res, indent=2), encoding="utf-8")
     rows = []
@@ -72,7 +80,7 @@ def write_report(run_dir: Path, res: dict) -> Path:
         f"<h1>Shape recurrence ({res['charts']} charts, {res['passes']} passes)</h1>"
         f"<p>vocab {res['vocab_version']} · primary-tag agreement between passes <b>{res['primary_agreement']:.0%}</b> · "
         f"mean tag overlap <b>{res['mean_tag_jaccard']}</b> · charts with no stable tag {res['charts_with_no_stable_tag']} · "
-        f"recurring = stable on ≥ {res['support_needed']} charts</p>"
+        f"recurring = stable on ≥ {res['support_needed']} charts</p>" + sampling_note(run_dir) +
         "<table><tr><th>shape</th><th>stable charts</th><th>share</th><th>stable primary</th><th>recurring?</th>"
         f"<th>examples</th></tr>{''.join(rows)}</table>", encoding="utf-8")
     return p

@@ -95,3 +95,15 @@ python -m src.discovery.vocab_report        # counts + report: results/discovery
 * A chart's **stable** tags are those present in every pass. Only stable tags are counted. A shape is
   **recurring** only if stable on >= `MIN_SUPPORT_N` charts and >= `MIN_SUPPORT_FRAC` of charts.
   The report also shows primary-tag agreement between passes: if that is low, the labelling is not reliable.
+
+### Tagging at scale (hard budget cap)
+```
+python -m src.discovery.tagset --dry-run        # sampling plan, no charts, no API
+python -m src.discovery.tagset                  # TAGSET_COUNT windows x RETAG_PASSES, stops at TAGSET_BUDGET_USD
+python -m src.discovery.vocab_report --run-dir results/discovery/tagset_v1
+```
+Tag-only (no free-text step), discovery period only, same fixed-span anonymised charts. Default sampling is
+stratified by window range (equal counts per quartile; uses only chart size, no outcomes), so report shares
+are not population frequencies. Token use is recorded per call; the run stops *between charts* when the
+projected spend would pass the cap, and re-running resumes. Prices in `config.OPENAI_PRICE_USD_PER_M`
+come from third-party pricing pages - verify them on your OpenAI dashboard.

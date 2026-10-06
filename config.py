@@ -77,3 +77,11 @@ DISCOVERY_DIR = ROOT / "results" / "discovery"
 RETAG_PASSES = 2          # independent passes per chart (even passes list the vocabulary reversed)
 MIN_SUPPORT_N = 3         # a shape counts as "recurring" only if stable on >= this many charts
 MIN_SUPPORT_FRAC = 0.05   # ... and on >= this fraction of charts
+
+# --- Stage 3 at scale: tag-only run with a hard spending cap -----------------------------
+# USD per 1M tokens. From third-party pricing pages (Aug 2026) - VERIFY on your OpenAI dashboard.
+OPENAI_PRICE_USD_PER_M = {"input": 0.75, "output": 4.50}
+TAGSET_RUN = "tagset_v1"            # results/discovery/<TAGSET_RUN>/  (separate from the 50-chart run)
+TAGSET_COUNT = 1000                 # windows to tag
+TAGSET_BUDGET_USD = 4.00            # hard stop; leaves reserve of whatever is left on the account
+TAGSET_SAMPLING = "stratified"      # "stratified" (equal counts per window-range quartile) or "even"
