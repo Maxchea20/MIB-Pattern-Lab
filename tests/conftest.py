@@ -43,3 +43,13 @@ def synthetic_db(tmp_path):
                         [(sym, tf, int(r.timestamp), r.open, r.high, r.low, r.close) for r in df.itertuples()])
     con.commit(); con.close()
     return p
+
+
+@pytest.fixture
+def cs_long_1h():
+    """~6 months of synthetic 1h candles + a cutoff 90 days in."""
+    from tests.conftest import make_ohlc
+    start = int(pd.Timestamp("2024-01-01T00:00:00Z").timestamp() * 1000)
+    raw = make_ohlc(4400, start_ms=start, step_ms=3_600_000)
+    cs = build_candles(raw, "BTC/USDT", "1h", "synthetic", as_of="2100-01-01")
+    return cs, "2024-04-01T00:00:00Z"

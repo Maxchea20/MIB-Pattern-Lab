@@ -126,3 +126,12 @@ windows), and windows are kept >= one full window apart. The prompt never mentio
 `config.DISCOVERY_END_BY_TF` overrides the cutoff per timeframe (1h: 2024-06-01, so ~2.3 years stay locked for
 validation). The split, and everything still to be fixed before any outcome is examined, is in
 `docs/PREREGISTRATION.md`. Runs with a custom cutoff get their own folder (e.g. `tagset_v1_1h_cut20240601`).
+
+### Adding discovery windows (top-up) and the experiment's pre-registration
+```
+python -m src.discovery.tagset --timeframe 1h --topup 999 --dry-run     # how many more fit (no API, no render)
+python -m src.discovery.tagset --timeframe 1h --topup 999 --budget-usd 1  # add them and tag them
+```
+Existing windows are never changed; new ones never overlap them and stay inside the discovery period. Re-running
+the plain command reuses the existing window list. The full experiment design (frozen tagging setup, families,
+outcome measures, permutation test, decision rule, one-shot hold-out) is in `docs/PREREGISTRATION.md`.

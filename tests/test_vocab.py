@@ -173,3 +173,51 @@ def test_pick_spacing_scales_with_timeframe_and_run_dirs():
     assert len(ts) == 60 and min(b - x for x, b in zip(ts, ts[1:])) >= pd.Timedelta(minutes=15 * 60)
     assert default_run_dir("5m").name == config.TAGSET_RUN
     assert default_run_dir("15m").name == config.TAGSET_RUN + "_15m" != default_run_dir("1h").name
+
+
+def test_topup_adds_nonoverlapping_windows_inside_cutoff_and_keeps_existing(cs_long_1h, tmp_path, monkeypatch):
+    import json
+    import pandas as pd
+    from src.discovery import tagset
+    cs, cutoff = cs_long_1h
+    monkeypatch.setattr(config, "DISCOVERY_END_BY_TF", {"1h": cutoff})
+    picks, info, windows = tagset.prepare(cs, tmp_path, 40, "stratified")
+    before = (tmp_path / "windows.jsonl").read_text()
+    new, allw = tagset.topup(cs, tmp_path, 10_000)
+    assert len(new) > 0 and len(allw) == len(windows) + len(new)
+    ts = sorted(pd.Timestamp(w["end_ts"]) for w in allw)
+    assert min(b - a for a, b in zip(ts, ts[1:])) >= pd.Timedelta(hours=60)          # no overlap, ever
+    assert max(ts) < pd.Timestamp(cutoff)                                              # discovery only
+    for old in windows:                                                                # existing rows untouched
+        assert old in allw
+    assert all(w["batch"] == "topup1" for w in allw if "batch" in w)
+    meta = json.loads((tmp_path / "scale.json").read_text())
+    assert meta["topups"][0]["added"] == len(new)
+    again, _ = tagset.topup(cs, tmp_path, 10_000, render=False)
+    assert len(again) == 0                                                             # capacity is now full
+    assert len(tagset.load_windows(tmp_path)) == len(allw) and before != (tmp_path / "windows.jsonl").read_text()
+
+
+def test_topup_requires_existing_sample_and_same_style(cs_long_1h, tmp_path, monkeypatch):
+    from src.discovery import tagset
+    cs, cutoff = cs_long_1h
+    monkeypatch.setattr(config, "DISCOVERY_END_BY_TF", {"1h": cutoff})
+    with pytest.raises(SystemExit):
+        tagset.topup(cs, tmp_path, 5)
+    tagset.prepare(cs, tmp_path, 20, "stratified")
+    monkeypatch.setitem(config.DISCOVERY_CHART_STYLE, "axis_labels", "raw")           # style drift must be refused
+    with pytest.raises(SystemExit):
+        tagset.topup(cs, tmp_path, 5)
+
+
+def test_tagging_and_chart_code_never_import_outcomes():
+    """Pre-registration rule: nothing that builds/tag charts may be able to see forward outcomes."""
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parents[1] / "src"
+    offenders = []
+    for pkg in ("discovery", "charts", "data", "validation"):
+        for f in (root / pkg).rglob("*.py"):
+            txt = f.read_text(encoding="utf-8")
+            if "src.outcomes" in txt or "from src import outcomes" in txt or "import outcomes" in txt:
+                offenders.append(str(f))
+    assert offenders == [], offenders

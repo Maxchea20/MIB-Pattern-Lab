@@ -1,84 +1,136 @@
-# Pre-registration (written before any outcome analysis)
+# Pre-registration — MIB Pattern Lab (1h BTC/USDT)
 
-Status when written: **no forward-return / outcome data has been examined.** Only chart shapes, AI tags and
-window-only geometry features (`src/discovery/audit.py`) have been looked at.
+**Version: v2 DRAFT.** Supersedes the earlier "outcome test plan v1" (see git history).
+**Status: no forward-return / outcome data has been examined.** Only chart shapes, AI tags and window-only geometry
+(`src/discovery/audit.py`) have been looked at. This document must be approved (and the OPEN ITEMS in section 12
+answered) before any outcome is computed. After the first outcome is computed, nothing here may change.
 
-## Data split (fixed)
-| timeframe | discovery period (shapes may be studied) | hold-out (locked) |
+The scientific question: **do recurring visual shapes in clean price history contain information about subsequent
+price movement?** This is not a trading-rule project. No interpretation of shapes, no technical-analysis renaming,
+no entry/exit/TP/SL logic is part of this experiment.
+
+## 1. Data split (fixed)
+| timeframe | discovery period | hold-out (locked) |
 |---|---|---|
-| 5m, 15m | up to 2026-06-01 (exclusive) | 2026-06-01 onward |
-| 1h | 2020-06 up to 2024-06-01 (exclusive) | 2024-06-01 onward |
+| 1h (the only timeframe tested here) | 2020-06-05 up to 2024-06-01 (exclusive) | 2024-06-01 onward |
 
-* The hold-out is used **once**, at the end, only for shapes/rules frozen beforehand. No tuning after seeing it.
 * Enforced in code: `config.discovery_end(tf)` -> `discover.discovery_candles()` removes later candles before any
-  window is built; sampling asserts that every window ends before the cutoff.
-* The first 1h pilot (100 windows, folder `tagset_v1_1h`) included ~20 windows after 2024-06-01. Only tags were
-  looked at (never outcomes). Those windows are not reused; the full 1h run uses a fresh folder
-  (`tagset_v1_1h_cut20240601`).
-* The chosen timeframe for the outcome test is 1h (best shape variety and tag reliability in the pilots).
+  window is built; sampling asserts every window ends before the cutoff.
+* The hold-out is tagged and evaluated **once**, at the end (section 9). No tuning after seeing it.
+* The first 1h pilot (`tagset_v1_1h`, 100 windows, ~20 after 2024-06-01) is not reused. Only tags were looked at.
 
-## Still to be fixed BEFORE looking at any outcome
-1. Frozen vocabulary (shapes with real support only).
-2. Forward horizon(s) and measure (forward return of the close, in %, no trading rules).
-3. Baseline: all windows, and a "plain net-move" control (a window-only rule with the same direction as the shape).
-4. Multiple-testing correction across the number of shapes tested.
-5. Minimum sample per shape for a shape to be tested at all.
+## 2. Frozen tagging setup (unchanged; also used, unchanged, for the hold-out)
+* Model `gpt-5.4-mini`; prompt `retag-v1`; vocabulary `vocab-v1`.
+  * vocab sha256 `3eab422efbf6279fa7efe991230c7b493699e35c8bff3e7b89d649b439805d54`
+  * system prompt sha256 `5ac0b75fd36689bd3994c3a35bdc195e858fd41b27ee423a0fe9cf15d2c93690`
+  * user prompt (pass 1) sha256 `4b478c2d878a98a1259a834b6b7482b42d9a4f04f8f4f8e38633d35b111a40cb`
+  * user prompt (pass 2, vocabulary reversed) sha256 `7e6d3f8d72fdd94fc8d549ea9f1eacd13fd0ee2dbe2aa9c9fb8030c9005715d9`
+* Two passes; a window's **stable tags** = tags present in BOTH passes. Invalid tags are errors, never repaired.
+* Charts: 60 closed 1h candles ending at T; fixed vertical span (computed once from the discovery period, **25.2%**,
+  then frozen and reused unchanged for the hold-out); axes anonymised (% vs close at T, T-50..T).
+* **No outcome information is available during tagging**: the model sees only the PNG and the fixed prompt, and the
+  tagging code cannot import the outcome module (test-enforced).
 
----
+## 3. Discovery sample (option C: fill the remaining capacity)
+* Start: 431 non-overlapping windows (`tagset_v1_1h_cut20240601`, stratified by window range).
+* Top-up: `python -m src.discovery.tagset --timeframe 1h --topup 999` adds the remaining non-overlapping
+  discovery-period windows (target ~580 total), same chart style (hash-checked), same frozen tagging setup. Windows
+  never overlap each other or the originals and never touch hold-out data.
+* The final `windows.jsonl` sha256 is recorded in the analysis output; the discovery sample is **frozen** when
+  tagging finishes and the hash is recorded.
+* The sample is stratified by window range (a feature of the chart itself, not an outcome). Baselines and nulls are
+  computed on this same sample, and range is a control covariate (section 6).
 
-# OUTCOME TEST PLAN — DRAFT v1 (NOT YET APPROVED)
+## 4. Outcome measures (only `src/outcomes/` may read candles after T)
+Entry reference = **close of T**. For each window and each horizon H in {1, 3, 6, 12, 24} one-hour candles (hours):
+* `ret_H` = 100 * (close[T+H] / close[T] - 1)
+* `fut_high_H` = max(high[T+1..T+H]);  `fut_low_H` = min(low[T+1..T+H])  (prices)
+* `MFE_H` = 100 * (fut_high_H / close[T] - 1)   (max favorable excursion, >= 0 on the long side by construction)
+* `MAE_H` = 100 * (fut_low_H / close[T] - 1)    (max adverse excursion, <= 0)
+No TP/SL, no costs in these measures. Signs are not flipped for any family (no assumed direction).
 
-Status when written: the 1h discovery tagging (431 windows) is done. **No forward-return data has been examined.**
-Nothing below may be changed after the first outcome is looked at. If the user does not approve, nothing runs.
+Exclusions (counted and reported): the 24 candles after T must exist, be gap-free and be **before the cutoff**
+(a discovery window whose forward path reaches into the hold-out period is excluded, so no hold-out data influences
+discovery outcomes).
 
-## 1. Frozen tagging configuration
-* Model `gpt-5.4-mini`; prompt `retag-v1`; vocabulary `vocab-v1` (sha256 `3eab422efbf6279f...`); 2 passes
-  (pass 2 lists the vocabulary reversed); a window's tags = tags present in BOTH passes ("stable").
-* Charts: fixed-span, anonymised (% vs close at T, T-50..T), 1h, 60 candles. Held-out windows must be tagged with
-  exactly this configuration. The prompt/vocabulary files are not edited.
-
-## 2. Windows
-* Discovery sample = `results/discovery/tagset_v1_1h_cut20240601` (431 non-overlapping windows, stratified by window
-  range). The baseline is the SAME 431 windows (not the whole market).
-* Windows with no stable tag are kept (as "untagged") in the baseline.
-
-## 3. Families (defined from tag names only, before outcomes)
-Confirmatory (stable on >= 30 discovery windows; max 4 tests):
-| family | definition |
+## 5. Families
+**Primary (confirmatory) families:**
+| family | definition (stable tags) |
 |---|---|
-| F_sideways | sideways_range |
-| F_drift_up | drift_up |
-| F_drift_down | drift_down |
-| F_impulse_up | stair_step_up OR sharp_rally OR range_breakout_up |
+| sideways_range | `sideways_range` |
+| drift_up | `drift_up` |
+| drift_down | `drift_down` |
+| impulse_up | **see OPEN ITEM 1** |
 
-Exploratory (descriptive means only, no claims, no hold-out run): sharp_drop, rounded_top, rounded_bottom,
-terminal_spike_up, terminal_spike_down, choppy_volatile, tight_compression, v_reversal, spike_and_retrace.
-Never observed (dropped): stair_step_down, inverted_v, range_breakdown, none.
-A window can belong to several families.
+**Exploratory families (reported separately, descriptive, no claims, no multiplicity budget):**
+`stair_step_up`, `sharp_rally`, `range_breakout_up` (kept **separate**, not merged), plus `sharp_drop`, `rounded_top`,
+`rounded_bottom`, `terminal_spike_up`, `terminal_spike_down`, `choppy_volatile`, `tight_compression`, `v_reversal`,
+`spike_and_retrace`. Never observed in discovery (dropped): `stair_step_down`, `inverted_v`, `range_breakdown`, `none`.
+A window may belong to several families. Windows with no stable tag stay in the non-family population.
+A family is analysed only if it has >= 30 windows with valid outcomes (otherwise reported as "too few").
 
-## 4. Outcome measure (the only place that may read candles after T)
-* R = 100 * (close[T+12] / close[T] - 1), 12 one-hour candles (12 hours) after the window end T. Entry = close of T.
-  No fees/slippage in R; a 0.2% round-trip cost line is shown for reference only.
-* Windows whose 12 following candles are missing or contain a gap are excluded and counted.
-* Secondary, descriptive only: H = 24. Not tested.
-* Window spacing (60h) exceeds the horizon, so outcome periods do not overlap.
-* Code: `src/outcomes/` is the only module allowed to read candles after T. A test asserts the tagging /
-  chart pipeline never imports it.
+## 6. Statistics (reported for every family and every horizon)
+For each family vs. the **non-family population** (all other discovery windows):
+* N; mean and median `ret_H`; win % (`ret_H` > 0); mean and median MFE_H and MAE_H;
+* effect size: mean difference (percentage points) and Cohen's d;
+* 95% confidence interval for the mean difference (bootstrap, 10,000 resamples, fixed seed 20240601);
+* unadjusted significance: Welch t-test p-value and permutation p-value;
+* control regression (supplementary): `ret_H ~ net_pct + range_pct + eff + family_dummy`, HC3 robust errors, where
+  net_pct/range_pct/eff are window-only features (`audit.py`). It tests whether the family adds information
+  **beyond simple measurable features**.
 
-## 5. Tests (per confirmatory family)
-1. Descriptive: mean R of the family vs. all other windows (permutation test, 10,000 label shuffles).
-2. **Primary criterion** ("adds beyond simple features"): OLS `R ~ net_pct + range_pct + eff + family_dummy`
-   (window-only features; HC3 robust errors; two-sided). A family passes discovery if its dummy has
-   **Holm-adjusted p < 0.05 across the 4 families**.
-3. If none passes: record "no detectable effect at this power". No new families, horizons or vocabulary on this data.
+## 7. Null / permutation test
+* Fixed seed 12345, **10,000 permutations**. Each permutation shuffles the outcome rows (all horizons, MFE and MAE
+  jointly) against the family-membership matrix across the discovery observations, which preserves the outcome
+  distribution and the dependence between horizons and between families.
+* Statistic per (family, horizon): Welch t of `ret_H`, family vs non-family. The real value is compared with its
+  null distribution (reported: observed statistic, null 2.5/50/97.5 percentiles, unadjusted two-sided p).
+* **Family-wise correction:** Westfall–Young **maxT** over all primary (family x horizon) cells (3 or 4 families x 5
+  horizons), giving adjusted p-values. MFE/MAE use the same permutations but are secondary/unadjusted (they scale
+  with volatility).
 
-## 6. Power (stated up front)
-With a 12h return std of ~2.1%, 80% power and Holm over 4 tests, the minimum detectable effect is roughly
-0.9% (drift_up/down, n=69), ~1.2% (impulse_up, n~39), ~0.8% (sideways). Plausible real effects are far smaller.
-A "no result" therefore means inconclusive for small effects, not proof of no edge. Only large effects can pass.
+## 8. Discovery decision rule (no single test decides)
+A primary family **survives discovery at horizon H** only if, with N >= 30:
+1. maxT-adjusted permutation p-value for `ret_H` < 0.05, **and**
+2. the 95% bootstrap CI for the mean difference excludes 0, **and**
+3. the control regression's family dummy has the same sign and p < 0.05.
+Everything else (medians, win %, MFE/MAE, effect sizes, all other cells) is reported in full. If several horizons
+qualify, the one with the smallest adjusted p is the family's frozen hold-out horizon (ties: shorter horizon).
+If nothing survives, the conclusion is "no detectable effect at this power", and nothing is re-tuned on this data.
 
-## 7. Hold-out (one shot)
-* Only for families that pass 5.2. Tag hold-out windows (2024-06-01 onward, non-overlapping, same sampling) with the
-  frozen configuration in section 1; compute R the same way.
-* Pass = same sign as discovery, one-sided p < 0.05 for the family dummy in the same regression, and effect >= 50%
-  of the discovery estimate. Report the result whatever it is. The hold-out is never re-used or tuned on.
+## 9. Freeze, then hold-out (exactly once)
+Order is fixed:
+1. Discovery tagging (incl. top-up) complete.
+2. Discovery outcome analysis complete and reported.
+3. **Freeze**: tagging setup (section 2), family definitions (section 5), analysis code and decisions (sections 6-8),
+   the discovery `windows.jsonl` hash. Recorded as a git tag `prereg-frozen`.
+4. Tag the hold-out with the frozen setup. Hold-out windows lie **entirely** inside the hold-out period
+   (window start >= 2024-06-01), are non-overlapping, use the **discovery 25.2% span** (not recomputed; wider windows
+   excluded), and need 24 forward candles inside the available data. Same stratified, fill-capacity procedure.
+5. Run the outcome evaluation **once** (code writes a lock file and refuses to run twice).
+6. Report everything, good or bad. Nothing is modified based on hold-out results.
+
+Hold-out verdict, only for families that survived discovery, at their frozen horizon: same sign as discovery, one-sided
+permutation p < 0.05, control-regression dummy same sign, and mean difference >= 50% of the discovery estimate.
+Non-surviving and exploratory families are shown on the hold-out descriptively and carry no verdict.
+
+## 10. Power (stated up front)
+With ~580 windows (drift families ~90 each), 80% power and ~15 maxT cells, the minimum detectable effect is
+about 0.43 x the standard deviation of `ret_H`. Assuming BTC 1h-candle std of roughly 0.6%, 1.1%, 1.5%, 2.1%, 3.0%
+at 1/3/6/12/24 h (to be checked against the data), that is ~0.26 / 0.46 / 0.65 / 0.9 / 1.3 percentage points.
+Plausible true effects are smaller, so "no result" means **inconclusive for small effects**, not proof of no edge.
+
+## 11. Constraints
+* No trading rules, entry/exit logic, TP/SL or position sizing anywhere in this experiment.
+* No interpretation or technical-analysis renaming of shapes before the hold-out result exists.
+* Any conversion of a surviving pattern into a trading setup is a separate, later discussion.
+
+## 12. OPEN ITEMS (must be answered before anything runs)
+1. **impulse_up.** Your instruction says to keep `impulse_up` as a primary family AND not to merge
+   `stair_step_up`, `sharp_rally`, `range_breakout_up` yet. Both cannot hold literally. Default written here
+   (**option A**): the three primary families are sideways_range, drift_up, drift_down (3 x 5 = 15 maxT cells);
+   the three impulse shapes stay separate and exploratory; `impulse_up` is only a reserved name. Option B: keep
+   `impulse_up` = union of the three as a 4th primary family (20 cells) while ALSO reporting the three separately.
+2. **Hold-out scope.** Default written here: evaluate every frozen family once on the hold-out, but give verdicts
+   only to families that survived discovery. Alternative: evaluate only the survivors.
+3. **Discovery decision rule** (section 8) and the 0.05 thresholds: confirm or change.
