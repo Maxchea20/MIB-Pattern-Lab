@@ -1,0 +1,103 @@
+{
+  "locked_at": "2026-10-06T17:26:24.487493+00:00",
+  "experiment": "5m_v1",
+  "design_lock_sha256": "31c687009e7ae20751024761fdc787883b573722b21651ac98521fc5313ffd58",
+  "design_lock_prereg_sha256": "116cf02661020027304954b30d8f5e4aa028c84d4ea46c5302f20b6a9a5cb6e2",
+  "n_windows": 600,
+  "n_windows_with_stable_tag": 599,
+  "model": "gpt-5.4-mini",
+  "passes": 2,
+  "vocabulary": {
+    "families": [
+      {
+        "name": "flat_sideways_band",
+        "definition": "A mostly horizontal path with small oscillations, staying within a narrow vertical range."
+      },
+      {
+        "name": "upward_step_rise",
+        "definition": "A path that climbs upward in discrete steps, pauses, or small pullbacks, often ending higher on the right."
+      },
+      {
+        "name": "downward_step_drop",
+        "definition": "A path that moves downward in discrete steps, pauses, or small rebounds, often ending lower on the right."
+      },
+      {
+        "name": "rounded_turning_peak",
+        "definition": "A smooth rise that crests into a rounded top and then turns downward without sharp corners."
+      },
+      {
+        "name": "rounded_turning_trough",
+        "definition": "A smooth decline that bottoms into a rounded low and then turns upward without sharp corners."
+      },
+      {
+        "name": "choppy_reversal",
+        "definition": "A jagged move that changes direction sharply, with uneven candles and alternating rises and drops."
+      },
+      {
+        "name": "flat_end_cluster",
+        "definition": "A narrow, nearly level finish with a small final push, pullback, or clustered candles near one edge."
+      }
+    ],
+    "sha256": "645a2963ae742c44bd5fb83f7588536475f1d3d5dde7e4309106986bc65d3fae",
+    "file_sha256": "d2b954511fbe2019c0858256966017516a6d38d2caa72efeb26803e90c76a2d4"
+  },
+  "sha256": {
+    "windows5m_jsonl": "a7d28a6c6eb0507c0253511e991ea789808e54ac932fa4df68d888c43fc6d0f2",
+    "sample_meta_json": "8d6dd0f293e09d0f67dc97c8b274f2450316afd45e48504eb6444555d942d762",
+    "tags5m_jsonl": "24ce895e7c7cf2050a6b8f6dc5bc4244a16fe1ee40639185ea7c3d21feff53ce",
+    "d1_descriptions_jsonl": "83fe1d0d94d167c34f789ab528e87e41dd6cba9f5ec7aa352bea6c51af942aa5",
+    "d2_attempts_jsonl": "d993e1e108894ba6c3500c89d587113a2f110d2ba967c429f7147b8c51fc7b1e",
+    "d3_user_prompt_pass1": "5544cb4288d83799f5bcc3885da58c5a036d0050b3add59d0b24fc2a00db05d5",
+    "d3_user_prompt_pass2": "3b3946d5ac0bef692b8df48707086b35fab556fb6ed8930d187c3f907ede78e4"
+  },
+  "family_window_counts": {
+    "flat_sideways_band": 291,
+    "upward_step_rise": 106,
+    "downward_step_drop": 90,
+    "rounded_turning_peak": 18,
+    "rounded_turning_trough": 20,
+    "choppy_reversal": 459,
+    "flat_end_cluster": 104
+  },
+  "n_min": 30,
+  "confirmatory_families": [
+    "choppy_reversal",
+    "flat_sideways_band",
+    "upward_step_rise",
+    "flat_end_cluster",
+    "downward_step_drop"
+  ],
+  "n_confirmatory_cells": 25,
+  "sample_meta": {
+    "experiment": "5m_v1",
+    "timeframe": "5m",
+    "lookback": 60,
+    "calibration_days": 28,
+    "calibration_end": "2025-10-13T19:05:00+00:00",
+    "span_pct": 4.3,
+    "span_quantile": 0.99,
+    "discovery_end": "2026-06-01T00:00:00Z",
+    "funnel": {
+      "closed_candles_before_cutoff": 74363,
+      "gap_free_windows": 74304,
+      "start_after_calibration": 66240,
+      "excluded_wider_than_span": 1762,
+      "excluded_no_complete_forward_path_before_cutoff": 24,
+      "candidates": 64454
+    },
+    "n_target": 600,
+    "n_selected": 600,
+    "per_stratum": {
+      "Q1_quiet": 150,
+      "Q2": 150,
+      "Q3": 150,
+      "Q4_active": 150
+    },
+    "first_window_end": "2025-10-14T00:00:00+00:00",
+    "last_window_end": "2026-05-31T21:55:00+00:00",
+    "chart_style_sha256": "8028a19e57351ddb5b394a598e23193428142fb0ebdf73f07cddc3dde27225a5",
+    "limitation_statement": "The 4.3% causal-span constraint excludes approximately 1,762 candidate windows (2.66% of the candidate population). Therefore, conclusions from the 600-window discovery experiment apply only to the sampled population within the causal-span constraint and do not establish behavior for those excluded high-span windows.",
+    "windows5m_jsonl_sha256": "a7d28a6c6eb0507c0253511e991ea789808e54ac932fa4df68d888c43fc6d0f2",
+    "n_description_stage": 300
+  }
+}
