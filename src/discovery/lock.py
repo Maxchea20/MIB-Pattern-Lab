@@ -83,6 +83,7 @@ def build_lock(run_dir: Path, timeframe: str, passes: int = config.RETAG_PASSES)
     model = next(iter({r.get("model") for r in used}))
     return {
         "locked_at": pd.Timestamp.now(tz="UTC").isoformat(),
+        "hash_method": "sha256 over file bytes with CRLF normalised to LF",
         "git_commit": commit, "timeframe": timeframe, "discovery_end": str(cutoff),
         "run_dir": str(run_dir.name), "n_windows": len(windows), "n_windows_with_stable_tag":
             sum(1 for v in stable.values() if v),

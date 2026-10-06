@@ -201,7 +201,9 @@ def topup(cs, out_dir: Path, n: int, render: bool = True):
 
 
 def file_sha256(path: Path) -> str:
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    """sha256 of the file with CRLF normalised to LF, so the hash is identical on Windows and Linux/GitHub
+    (git on Windows may check text files out with CRLF line endings)."""
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def main(argv=None) -> int:

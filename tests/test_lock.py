@@ -57,3 +57,13 @@ def test_lock_refuses_incomplete_overlapping_late_or_mixed(locked_dir, monkeypat
     (locked_dir / "retags.jsonl").write_text("\n".join(json.dumps(r) for r in rows2), encoding="utf-8")
     with pytest.raises(SystemExit, match="mixed model"):
         lock.build_lock(locked_dir, "1h")
+
+
+def test_file_hash_is_line_ending_independent(tmp_path):
+    from src.discovery.tagset import file_sha256
+    a, b = tmp_path / "a.txt", tmp_path / "b.txt"
+    a.write_bytes(b"line1\nline2\n")
+    b.write_bytes(b"line1\r\nline2\r\n")
+    assert file_sha256(a) == file_sha256(b)
+    b.write_bytes(b"line1\r\nline3\r\n")
+    assert file_sha256(a) != file_sha256(b)
