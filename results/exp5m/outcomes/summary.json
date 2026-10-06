@@ -1,0 +1,78 @@
+{
+  "design_prereg_sha256": "116cf02661020027304954b30d8f5e4aa028c84d4ea46c5302f20b6a9a5cb6e2",
+  "discovery_lock_sha256": "8e3aa8471c8b1981803d098c9141d22f4454cbb842460287f13ceb32ec118484",
+  "code_sha256": "e13d16d682e3629a440ef3c58ea3e1ad396e0cb006cb2eb1bbb5c170c03dcadb",
+  "B_perm": 10000,
+  "B_boot": 10000,
+  "n_windows": 600,
+  "n_valid": 600,
+  "excluded": {
+    "end_candle_missing": 0,
+    "insufficient_forward_candles": 0,
+    "gap_in_forward_path": 0
+  },
+  "limitation_statement": "The 4.3% causal-span constraint excludes approximately 1,762 candidate windows (2.66% of the candidate population). Therefore, conclusions from the 600-window discovery experiment apply only to the sampled population within the causal-span constraint and do not establish behavior for those excluded high-span windows.",
+  "real_fills_statement": "Forward return, future high, future low, MFE and MAE are descriptive statistics of the historical price series, measured from the close of the last candle of each visual window. They are not trade fills, they were not shown to be executable prices, and they must not be read as realized trades.",
+  "final_statement": "No robust predictive visual family was established in the 5M discovery sample.",
+  "experiment": "5m_v1",
+  "confirmatory_families": [
+    "choppy_reversal",
+    "flat_sideways_band",
+    "upward_step_rise",
+    "flat_end_cluster",
+    "downward_step_drop"
+  ],
+  "family_window_counts": {
+    "flat_sideways_band": 291,
+    "upward_step_rise": 106,
+    "downward_step_drop": 90,
+    "rounded_turning_peak": 18,
+    "rounded_turning_trough": 20,
+    "choppy_reversal": 459,
+    "flat_end_cluster": 104
+  },
+  "categories": {
+    "choppy_reversal": {
+      "N": 459,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "DOES NOT PASS",
+      "reason": "at every horizon the 95% CI lies within +/-MDE: effects at least that large are not supported"
+    },
+    "flat_sideways_band": {
+      "N": 291,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "DOES NOT PASS",
+      "reason": "at every horizon the 95% CI lies within +/-MDE: effects at least that large are not supported"
+    },
+    "upward_step_rise": {
+      "N": 106,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "DOES NOT PASS",
+      "reason": "at every horizon the 95% CI lies within +/-MDE: effects at least that large are not supported"
+    },
+    "flat_end_cluster": {
+      "N": 104,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "DOES NOT PASS",
+      "reason": "at every horizon the 95% CI lies within +/-MDE: effects at least that large are not supported"
+    },
+    "downward_step_drop": {
+      "N": 90,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "INCONCLUSIVE / LOW POWER",
+      "reason": "criteria not met and the data cannot exclude effects of MDE size at every horizon"
+    }
+  },
+  "any_pass": false,
+  "holdout_allowed": false,
+  "alpha_holdout": null,
+  "python": "3.11.9",
+  "numpy": "2.4.6",
+  "seconds": 5.7,
+  "completed_at": "2026-10-06T17:33:09.960463+00:00"
+}
