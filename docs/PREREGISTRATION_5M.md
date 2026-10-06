@@ -89,8 +89,11 @@ Source: `market_Data_Clean.db`, table `candles`, `symbol = BTC_USDT`, `timeframe
   where selection-stage hindsight exists**: a window's stratum label depends on the distribution of ranges of windows that
   end after it. It determines only *which* windows are chosen. It **never enters any chart image, any AI input (D1, D2,
   D3) or any outcome calculation**, and no forward return, forward high/low or any other price after T of any window is used
-  anywhere in the sampling. A strictly causal alternative (cut-points taken from the calibration prefix only) was
-  considered and rejected because, as volatility changes over the year, the strata would become badly unequal.
+  anywhere in the sampling.
+  A fully causal alternative was considered. It was not selected because using calibration-period cut-points would
+  likely produce substantially unequal volatility strata during the later discovery period. The chosen method
+  prioritizes balanced sampling across the observed discovery-period volatility distribution. This selection-stage
+  hindsight is explicitly disclosed and does not enter chart construction, AI inputs, or outcome calculation.
 * **Exact deterministic selection procedure** (`src/exp5m/sampling.py`; no randomness, no seed):
   1. *Candidates:* gap-free 60-candle windows that start at/after the prefix end, end before the cutoff, have range ≤ the
      span, and have 24 contiguous candles after T before the cutoff. Sorted by end time.

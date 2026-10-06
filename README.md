@@ -162,4 +162,7 @@ Order of work, freezes and the outcome-blind discovery architecture are in secti
 ## Permanent policy: REAL FILLS ONLY
 `docs/REAL_FILLS_POLICY.md` is permanent for this project. The 1H and 5M experiments measure forward return, future
 high/low, MFE and MAE as **descriptive statistics, not trade fills**. No trading backtest may be written until a separate
-execution specification is frozen; `tests/test_policy.py` fails if backtest/execution/fill code appears earlier.
+execution specification is frozen. `tests/test_policy.py` enforces this **behaviourally** (it parses the code; it does not
+ban file or function names): imports of trading/exchange libraries, calls that place or simulate orders/fills, execution
+parameters such as stop_loss or fill_price, and exchange hosts fail the tests unless a verified, frozen
+`docs/EXECUTION_SPEC_LOCK.json` permits them in named paths - and never inside the discovery/outcome modules.
