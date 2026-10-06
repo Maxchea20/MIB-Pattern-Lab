@@ -158,3 +158,8 @@ python -m src.exp5m.lock5m --write              # freeze the design (after the o
 python -m src.exp5m.sampling --build --confirm-design-sha <12 chars>   # generate the discovery sample + charts
 ```
 Order of work, freezes and the outcome-blind discovery architecture are in section 11 of the 5M pre-registration.
+
+## Permanent policy: REAL FILLS ONLY
+`docs/REAL_FILLS_POLICY.md` is permanent for this project. The 1H and 5M experiments measure forward return, future
+high/low, MFE and MAE as **descriptive statistics, not trade fills**. No trading backtest may be written until a separate
+execution specification is frozen; `tests/test_policy.py` fails if backtest/execution/fill code appears earlier.
