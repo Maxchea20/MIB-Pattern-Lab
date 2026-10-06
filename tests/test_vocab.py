@@ -123,13 +123,20 @@ def test_stratified_pick_balanced_deterministic_and_unique():
     import numpy as np
     import pandas as pd
     from src.discovery.tagset import pick
-    idx = pd.date_range("2026-01-01", periods=4000, freq="5min", tz="UTC")
-    r = pd.Series(np.random.default_rng(1).uniform(0.2, 3, 4000), index=idx)
+    idx = pd.date_range("2026-01-01", periods=20000, freq="5min", tz="UTC")
+    r = pd.Series(np.random.default_rng(1).uniform(0.2, 3, 20000), index=idx)
     a = pick(r, idx, 100, "stratified")
     assert a == pick(r, idx, 100, "stratified") and len(a) == 100 and len({t for t, _ in a}) == 100
     assert [s for _, s in a].count("Q4_active") == 25 and [s for _, s in a].count("Q1_quiet") == 25
     q1 = [r.loc[t] for t, s in a if s == "Q1_quiet"]; q4 = [r.loc[t] for t, s in a if s == "Q4_active"]
     assert max(q1) < min(q4)
-    assert len(pick(r, idx, 50, "even")) == 50
+    ts = sorted(t for t, _ in a)
+    assert min(b - x for x, b in zip(ts, ts[1:])) >= pd.Timedelta(minutes=300)    # windows never overlap
+    ev = pick(r, idx, 50, "even")
+    assert len(ev) == 50
+    # clustered high-range region cannot produce overlapping picks
+    r2 = pd.Series(np.where(np.arange(20000) < 300, 5.0, 0.3), index=idx)
+    c = sorted(t for t, _ in pick(r2, idx, 40, "stratified"))
+    assert min(b - x for x, b in zip(c, c[1:])) >= pd.Timedelta(minutes=300)
     with pytest.raises(ValueError):
         pick(r, idx, 5, "bogus")

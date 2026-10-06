@@ -30,23 +30,48 @@ from src.discovery.discover import OpenAIDescriber, discovery_candles
 from src.discovery.retag import load_rows, run_retag
 
 
-def pick(ranges: pd.Series, eligible: pd.DatetimeIndex, count: int, mode: str) -> list[tuple[pd.Timestamp, str]]:
-    """-> [(end_ts, stratum)] sorted by time. Deterministic (no randomness)."""
+def _spread(n_total: int, n: int) -> list[int]:
+    """Candidate order: n evenly spaced indices first, then the rest of a 4n evenly spaced set."""
+    first = np.linspace(0, n_total - 1, n).round().astype(int).tolist()
+    more = np.linspace(0, n_total - 1, min(n_total, 4 * n)).round().astype(int).tolist()
+    seen, order = set(), []
+    for i in first + more + list(range(n_total)):
+        if i not in seen:
+            seen.add(i); order.append(i)
+    return order
+
+
+def pick(ranges: pd.Series, eligible: pd.DatetimeIndex, count: int, mode: str,
+         min_gap: pd.Timedelta | None = None) -> list[tuple[pd.Timestamp, str]]:
+    """-> [(end_ts, stratum)] sorted by time. Deterministic (no randomness). No two picks are closer
+    than `min_gap` (default: one full window), so sampled windows never overlap and are not
+    near-duplicates."""
+    min_gap = min_gap or pd.Timedelta(minutes=5 * config.LOOKBACK)
     r = ranges.loc[eligible]
     count = min(count, len(r))
     if mode == "even":
-        idx = np.linspace(0, len(r) - 1, count).round().astype(int)
-        return [(r.index[i], "all") for i in idx]
-    if mode != "stratified":
+        groups = [("all", r, count)]
+    elif mode == "stratified":
+        q = pd.qcut(r.rank(method="first"), 4, labels=["Q1_quiet", "Q2", "Q3", "Q4_active"])
+        per, extra = divmod(count, 4)
+        groups = [(lab, r[q == lab], per + (1 if k < extra else 0))
+                  for k, lab in enumerate(["Q1_quiet", "Q2", "Q3", "Q4_active"])]
+    else:
         raise ValueError(f"unknown sampling mode {mode!r}")
-    q = pd.qcut(r.rank(method="first"), 4, labels=["Q1_quiet", "Q2", "Q3", "Q4_active"])
-    per, extra = divmod(count, 4)
+    taken: list[pd.Timestamp] = []                     # sorted, for the spacing check
     out = []
-    for k, lab in enumerate(["Q1_quiet", "Q2", "Q3", "Q4_active"]):
-        grp = r[q == lab]
-        n = min(per + (1 if k < extra else 0), len(grp))
-        idx = np.linspace(0, len(grp) - 1, n).round().astype(int)
-        out += [(grp.index[i], lab) for i in idx]
+    for lab, grp, n in groups:
+        got = 0
+        for i in _spread(len(grp), min(n, len(grp))):
+            if got >= n:
+                break
+            t = grp.index[i]
+            j = np.searchsorted(taken, t)
+            near = (j > 0 and t - taken[j - 1] < min_gap) or (j < len(taken) and taken[j] - t < min_gap)
+            if near:
+                continue
+            taken.insert(j, t)
+            out.append((t, lab)); got += 1
     return sorted(out)
 
 
@@ -56,6 +81,8 @@ def prepare(cs, out_dir: Path, count: int, mode: str, render: bool = True):
     span = scale.choose_span(ranges)
     elig = scale.eligible_ends(ranges, span)
     picks = pick(ranges, elig, count, mode)
+    if len(picks) < count:
+        print(f"WARNING: only {len(picks)} non-overlapping windows fit (requested {count}).")
     assert all(t < pd.Timestamp(config.DISCOVERY_END) for t, _ in picks), "window beyond discovery cutoff"
     style = {**config.DISCOVERY_CHART_STYLE, "y_span_pct": span}
     info = {"span_pct": span, "windows_total": len(ranges), "windows_eligible": len(elig),
