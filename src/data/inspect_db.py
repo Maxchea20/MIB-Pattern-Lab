@@ -61,13 +61,17 @@ def convention_check(conn, sources) -> list[str]:
     a = a[~a.index.duplicated()]
     b = b[~b.index.duplicated()]
     unit = 3600 if b.index.max() < 1e11 else 3600 * 1000
-    same_open = (b.reindex(b.index).values == a.reindex(b.index).values)
-    open_hits = float(pd.Series(same_open).mean())
-    shifted = a.reindex(b.index - (unit - unit // 12)).values   # 5m candle starting 55m before ts
-    close_hits = float(pd.Series(b.values == shifted).mean())
+    # compare only where the 5m series exists (it covers a shorter period than 1h)
+    ov = b.index[b.index.isin(a.index)]
+    sh = ov - (unit - unit // 12)                      # 5m candle starting 55m before ts
+    ov_sh = ov[sh.isin(a.index)]
+    open_hits = float((b.loc[ov].values == a.loc[ov].values).mean()) if len(ov) else 0.0
+    close_hits = (float((b.loc[ov_sh].values == a.loc[ov_sh - (unit - unit // 12)].values).mean())
+                  if len(ov_sh) else 0.0)
     verdict = ("OPEN time (as assumed)" if open_hits > 0.9 and open_hits > close_hits else
                "CLOSE time (assumption WRONG - tell Claude)" if close_hits > 0.9 else "UNCLEAR")
     return ["Timestamp convention check (1h open vs 5m open):",
+            f"  overlapping 1h candles compared: {len(ov)}",
             f"  1h.open == 5m.open at same ts:        {open_hits:.1%}",
             f"  1h.open == 5m.open at ts-55m (close-time): {close_hits:.1%}",
             f"  => ts looks like: {verdict}", ""]
