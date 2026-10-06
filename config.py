@@ -49,5 +49,8 @@ CHART_STYLE = {
     "body_width": 0.7,
     "wick_width": 1.0,
     "y_pad_frac": 0.05,
-    "xtick_every": 10,    # candles between time-axis labels
+    "xtick_every": 10,
+    # Right-axis labels: "raw" = real prices (e.g. 94,250), "pct" = % vs close at T.
+    # Candle shapes are identical either way (always drawn normalized).
+    "axis_labels": "raw",    # candles between time-axis labels
 }

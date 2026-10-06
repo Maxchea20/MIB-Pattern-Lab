@@ -51,8 +51,9 @@ The schema is auto-detected (nothing is assumed). If detection is wrong, set `TA
 
 ## Normalization (`src/charts/normalize.py`)
 `norm = (price / close_T - 1) * 100` for O/H/L/C, where `close_T` is the last close in the window.
-Uses only data inside the window (no future candles). Raw OHLC is kept alongside. The chart's price
-axis is therefore "% vs. close at T", with the Y range fit to the window itself.
+Uses only data inside the window (no future candles). Raw OHLC is kept alongside. Candles are drawn in this normalized space with the Y range fit to the window itself. The right-axis
+labels show real prices by default (`CHART_STYLE["axis_labels"]="raw"`) or "% vs. close at T" (`"pct"`);
+the candle shapes are identical either way.
 
 ## Charts
 Candlesticks + price axis + time axis only, fixed style (`config.CHART_STYLE`), byte-deterministic PNGs.

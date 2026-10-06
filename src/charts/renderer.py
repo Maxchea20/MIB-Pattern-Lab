@@ -44,7 +44,13 @@ def render_window(w: Window, path, style: dict | None = None) -> Path:
     ax.set_xticks(ticks)
     ax.set_xticklabels([d["ts"].iloc[i].strftime("%m-%d\n%H:%M") for i in ticks], fontsize=8)
     ax.yaxis.tick_right()
-    ax.yaxis.set_major_formatter(lambda v, _: f"{v:+.2f}%")
+    if st["axis_labels"] == "raw":
+        ref = float(w.raw["close"].iloc[-1])      # close at T: the inverse of the normalization
+        ax.yaxis.set_major_formatter(lambda v, _: f"{ref * (1 + v / 100):,.0f}")
+    elif st["axis_labels"] == "pct":
+        ax.yaxis.set_major_formatter(lambda v, _: f"{v:+.2f}%")
+    else:
+        raise ValueError(f"axis_labels must be 'raw' or 'pct', got {st['axis_labels']!r}")
     ax.tick_params(colors=st["axis_color"], labelsize=8)
     for s in ("top", "left"):
         ax.spines[s].set_visible(False)

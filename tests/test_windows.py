@@ -121,3 +121,12 @@ def test_sampling_is_deterministic_and_valid(cs500):
     assert s1 == sample_end_timestamps(cs500, L, 20) and len(set(s1)) == 20
     assert s1 == sorted(s1) and s1[0] == _t(cs500, 59) and s1[-1] == _t(cs500, 499)
     assert sample_end_timestamps(cs500, L, 5, seed=1) == sample_end_timestamps(cs500, L, 5, seed=1)
+
+
+def test_axis_label_modes_same_shape_different_labels(cs500, tmp_path):
+    w = build_window(cs500, _t(cs500, 250), L)
+    raw = render_window(w, tmp_path / "r.png", {"axis_labels": "raw"})
+    pct = render_window(w, tmp_path / "p.png", {"axis_labels": "pct"})
+    assert raw.read_bytes() != pct.read_bytes()
+    with pytest.raises(ValueError):
+        render_window(w, tmp_path / "x.png", {"axis_labels": "bogus"})
