@@ -135,3 +135,9 @@ python -m src.discovery.tagset --timeframe 1h --topup 999 --budget-usd 1  # add 
 Existing windows are never changed; new ones never overlap them and stay inside the discovery period. Re-running
 the plain command reuses the existing window list. The full experiment design (frozen tagging setup, families,
 outcome measures, permutation test, decision rule, one-shot hold-out) is in `docs/PREREGISTRATION.md`.
+
+### Locking the discovery sample (before any outcome)
+```
+python -m src.discovery.lock --timeframe 1h --write     # verifies + writes docs/PREREG_LOCK.json
+```
+See `docs/PREREGISTRATION.md` section 13. The outcome module is built only after this lock exists.
