@@ -161,3 +161,15 @@ def test_audit_features_use_window_only_and_are_sane(cs_long):
     assert st == {k: v for k, v in tags.items()}
     table = audit.summarise(audit.build_table(cs_long, st))
     assert table["tag"].tolist()[0] == "ALL WINDOWS" and set(table["tag"]) >= {"drift_up", "sideways_range"}
+
+
+def test_pick_spacing_scales_with_timeframe_and_run_dirs():
+    import numpy as np
+    import pandas as pd
+    from src.discovery.tagset import default_run_dir, pick
+    idx = pd.date_range("2026-01-01", periods=20000, freq="15min", tz="UTC")
+    r = pd.Series(np.random.default_rng(2).uniform(0.2, 3, 20000), index=idx)
+    ts = sorted(t for t, _ in pick(r, idx, 60, "stratified", timeframe="15m"))
+    assert len(ts) == 60 and min(b - x for x, b in zip(ts, ts[1:])) >= pd.Timedelta(minutes=15 * 60)
+    assert default_run_dir("5m").name == config.TAGSET_RUN
+    assert default_run_dir("15m").name == config.TAGSET_RUN + "_15m" != default_run_dir("1h").name

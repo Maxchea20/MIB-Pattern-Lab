@@ -88,10 +88,12 @@ def write_report(run_dir: Path, res: dict) -> Path:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    ap.add_argument("--run-dir", default=str(config.DISCOVERY_DIR / config.DISCOVERY_RUN))
+    ap.add_argument("--timeframe", default=config.TIMEFRAME)
+    ap.add_argument("--run-dir", help="default: results/discovery/tagset_v1[_<timeframe>]")
     ap.add_argument("--passes", type=int, default=config.RETAG_PASSES)
     a = ap.parse_args(argv)
-    run_dir = Path(a.run_dir)
+    from src.discovery.tagset import default_run_dir
+    run_dir = Path(a.run_dir) if a.run_dir else default_run_dir(a.timeframe)
     res = analyse(load_rows(run_dir / "retags.jsonl"), a.passes)
     print(f"charts: {res['charts']} | passes: {res['passes']} | primary-tag agreement: {res['primary_agreement']:.0%} "
           f"| mean tag overlap: {res['mean_tag_jaccard']} | no stable tag: {res['charts_with_no_stable_tag']}")

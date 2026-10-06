@@ -116,3 +116,8 @@ Computes simple window-only features (net move, range, efficiency, biggest 5-can
 high/low sit, last-10 move) for every tagged window and shows their mean per stable tag. Use it to check
 that tag names match the geometry (e.g. `drift_down` should have negative net move) and that the AI tags
 add information beyond net move / range.
+
+### Other timeframes
+`tagset`, `vocab_report` and `audit` take `--timeframe` (e.g. `15m`, `1h`). Each timeframe gets its own folder
+(`results/discovery/tagset_v1_15m`), its own fixed chart scale (computed from that timeframe's discovery
+windows), and windows are kept >= one full window apart. The prompt never mentions the timeframe.

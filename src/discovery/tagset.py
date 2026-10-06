@@ -24,7 +24,7 @@ import pandas as pd
 import config
 from src.charts.renderer import chart_filename, render_window
 from src.charts.windows import build_window
-from src.data.loader import load_candles
+from src.data.loader import load_candles, tf_to_seconds
 from src.discovery import scale, vocab
 from src.discovery.discover import OpenAIDescriber, discovery_candles
 from src.discovery.retag import load_rows, run_retag
@@ -41,12 +41,19 @@ def _spread(n_total: int, n: int) -> list[int]:
     return order
 
 
+def default_run_dir(timeframe: str) -> Path:
+    """5m keeps the original folder name; other timeframes get their own folder."""
+    tf = tf_to_seconds(timeframe)
+    name = config.TAGSET_RUN if tf == tf_to_seconds(config.TIMEFRAME) else f"{config.TAGSET_RUN}_{timeframe}"
+    return config.DISCOVERY_DIR / name
+
+
 def pick(ranges: pd.Series, eligible: pd.DatetimeIndex, count: int, mode: str,
-         min_gap: pd.Timedelta | None = None) -> list[tuple[pd.Timestamp, str]]:
+         min_gap: pd.Timedelta | None = None, timeframe: str | None = None) -> list[tuple[pd.Timestamp, str]]:
     """-> [(end_ts, stratum)] sorted by time. Deterministic (no randomness). No two picks are closer
     than `min_gap` (default: one full window), so sampled windows never overlap and are not
     near-duplicates."""
-    min_gap = min_gap or pd.Timedelta(minutes=5 * config.LOOKBACK)
+    min_gap = min_gap or pd.Timedelta(seconds=tf_to_seconds(timeframe or config.TIMEFRAME) * config.LOOKBACK)
     r = ranges.loc[eligible]
     count = min(count, len(r))
     if mode == "even":
@@ -80,13 +87,13 @@ def prepare(cs, out_dir: Path, count: int, mode: str, render: bool = True):
     ranges = scale.window_ranges_pct(dcs.df, dcs.timeframe, config.LOOKBACK)
     span = scale.choose_span(ranges)
     elig = scale.eligible_ends(ranges, span)
-    picks = pick(ranges, elig, count, mode)
+    picks = pick(ranges, elig, count, mode, timeframe=dcs.timeframe)
     if len(picks) < count:
         print(f"WARNING: only {len(picks)} non-overlapping windows fit (requested {count}).")
     assert all(t < pd.Timestamp(config.DISCOVERY_END) for t, _ in picks), "window beyond discovery cutoff"
     style = {**config.DISCOVERY_CHART_STYLE, "y_span_pct": span}
     info = {"span_pct": span, "windows_total": len(ranges), "windows_eligible": len(elig),
-            "sampling": mode, "count": len(picks), "discovery_end": config.DISCOVERY_END,
+            "sampling": mode, "count": len(picks), "timeframe": dcs.timeframe, "discovery_end": config.DISCOVERY_END,
             "chart_style": {**config.CHART_STYLE, **style}}
     info["chart_style_sha256"] = hashlib.sha256(
         json.dumps(info["chart_style"], sort_keys=True, default=str).encode()).hexdigest()
@@ -118,15 +125,16 @@ def main(argv=None) -> int:
     ap.add_argument("--budget-usd", type=float, default=config.TAGSET_BUDGET_USD)
     ap.add_argument("--sampling", choices=["stratified", "even"], default=config.TAGSET_SAMPLING)
     ap.add_argument("--model", default=config.OPENAI_MODEL)
-    ap.add_argument("--out", default=str(config.DISCOVERY_DIR / config.TAGSET_RUN))
+    ap.add_argument("--timeframe", default=config.TIMEFRAME, help="e.g. 5m, 15m, 1h (default config.TIMEFRAME)")
+    ap.add_argument("--out", help="run folder (default results/discovery/tagset_v1[_<timeframe>])")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)
-    out = Path(a.out)
-    cs = load_candles(a.db)
+    out = Path(a.out) if a.out else default_run_dir(a.timeframe)
+    cs = load_candles(a.db, timeframe=a.timeframe)
     if a.dry_run:
         picks, info, _ = prepare(cs, out, a.count, a.sampling, render=False)
         by = pd.Series([s for _, s in picks]).value_counts().sort_index()
-        print(f"run dir: {out}\nmodel {a.model} | vocab {vocab.VOCAB_VERSION} | passes {a.passes}\n"
+        print(f"run dir: {out}\ntimeframe {a.timeframe} ({config.LOOKBACK} candles/window)\nmodel {a.model} | vocab {vocab.VOCAB_VERSION} | passes {a.passes}\n"
               f"discovery cutoff {config.DISCOVERY_END}; fixed span {info['span_pct']}% "
               f"(eligible {info['windows_eligible']}/{info['windows_total']} windows)\n"
               f"{len(picks)} windows ({a.sampling}): {picks[0][0]} -> {picks[-1][0]}\n{by.to_string()}\n"

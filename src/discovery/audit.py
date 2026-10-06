@@ -72,11 +72,13 @@ def summarise(df: pd.DataFrame) -> pd.DataFrame:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--db", default=str(config.DB_PATH))
-    ap.add_argument("--run-dir", default=str(config.DISCOVERY_DIR / config.TAGSET_RUN))
+    ap.add_argument("--timeframe", default=config.TIMEFRAME)
+    ap.add_argument("--run-dir", help="default: results/discovery/tagset_v1[_<timeframe>]")
     a = ap.parse_args(argv)
-    run = Path(a.run_dir)
+    from src.discovery.tagset import default_run_dir
+    run = Path(a.run_dir) if a.run_dir else default_run_dir(a.timeframe)
     tags = stable_tags(load_rows(run / "retags.jsonl"))
-    df = build_table(load_candles(a.db), tags)
+    df = build_table(load_candles(a.db, timeframe=a.timeframe), tags)
     summ = summarise(df)
     pd.set_option("display.width", 200)
     print(summ.to_string(index=False))
