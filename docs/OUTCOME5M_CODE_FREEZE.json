@@ -1,0 +1,25 @@
+{
+  "code_sha256": "e13d16d682e3629a440ef3c58ea3e1ad396e0cb006cb2eb1bbb5c170c03dcadb",
+  "files": [
+    "src/charts/windows.py",
+    "src/data/loader.py",
+    "src/discovery/audit.py",
+    "src/discovery/discover.py",
+    "src/discovery/families.py",
+    "src/discovery/retag.py",
+    "src/discovery/tagset.py",
+    "src/discovery/vocab.py",
+    "src/exp5m/io5m.py",
+    "src/exp5m/lock5m.py",
+    "src/exp5m/outcomes5m.py",
+    "src/exp5m/params.py",
+    "src/exp5m/prompts5m.py",
+    "src/outcomes/__init__.py",
+    "src/outcomes/analyze.py",
+    "src/outcomes/forward.py",
+    "src/outcomes/stats.py",
+    "src/validation/window_validation.py"
+  ],
+  "frozen_at": "2026-10-06T17:28:05.140853+00:00",
+  "note": "Written after the discovery lock and BEFORE any 5M outcome was computed. Any change to these files blocks the analysis."
+}

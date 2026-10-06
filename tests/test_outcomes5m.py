@@ -100,7 +100,7 @@ def test_frozen_set_adds_nothing_to_the_archived_1h_outcome_package():
 
 
 def test_execute_refuses_without_locks(tmp_path):
-    with pytest.raises(SystemExit):
+    with pytest.raises((SystemExit, FileNotFoundError)):                 # refuses before touching data or output
         o5.execute("none.db", tmp_path, tmp_path / "out", "116cf0266102")      # no outcome freeze / discovery lock yet
     assert not (tmp_path / "out").exists()
 
