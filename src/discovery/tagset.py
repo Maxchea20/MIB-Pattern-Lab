@@ -138,7 +138,7 @@ def main(argv=None) -> int:
         picks, info, _ = prepare(cs, out, a.count, a.sampling, render=False)
         by = pd.Series([s for _, s in picks]).value_counts().sort_index()
         print(f"run dir: {out}\ntimeframe {a.timeframe} ({config.LOOKBACK} candles/window)\nmodel {a.model} | vocab {vocab.VOCAB_VERSION} | passes {a.passes}\n"
-              f"discovery cutoff {info["discovery_end"]}; fixed span {info['span_pct']}% "
+              f"discovery cutoff {info['discovery_end']}; fixed span {info['span_pct']}% "
               f"(eligible {info['windows_eligible']}/{info['windows_total']} windows)\n"
               f"{len(picks)} windows ({a.sampling}): {picks[0][0]} -> {picks[-1][0]}\n{by.to_string()}\n"
               f"API calls: {len(picks) * a.passes}; hard budget ${a.budget_usd:.2f} "
