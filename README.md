@@ -141,3 +141,9 @@ outcome measures, permutation test, decision rule, one-shot hold-out) is in `doc
 python -m src.discovery.lock --timeframe 1h --write     # verifies + writes docs/PREREG_LOCK.json
 ```
 See `docs/PREREGISTRATION.md` section 13. The outcome module is built only after this lock exists.
+
+### Outcome module (built to the frozen pre-registration; NOT yet run)
+`src/outcomes/` is the only code allowed to read candles after a window end T. It runs only if
+`docs/PREREG_LOCK.json` matches every frozen file, `docs/OUTCOME_CODE_FREEZE.json` matches the code, and the run
+is confirmed with the first 12 characters of the lock's pre-registration hash. Hold-out candles are removed before
+anything is read; the analysis completes once (`RUN_COMPLETE.json`). Standard library + numpy only (no scipy).

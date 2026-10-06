@@ -23,3 +23,6 @@ results/single_chart/
 results/db_inspection.txt
 results/discovery/*
 !results/discovery/.gitkeep
+
+# derived per-window outcome data stays local
+results/outcomes/**/observations.csv
