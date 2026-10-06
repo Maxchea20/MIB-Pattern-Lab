@@ -1,0 +1,32 @@
+{
+  "experiment": "5m_v1",
+  "timeframe": "5m",
+  "lookback": 60,
+  "calibration_days": 28,
+  "calibration_end": "2025-10-13T19:05:00+00:00",
+  "span_pct": 4.3,
+  "span_quantile": 0.99,
+  "discovery_end": "2026-06-01T00:00:00Z",
+  "funnel": {
+    "closed_candles_before_cutoff": 74363,
+    "gap_free_windows": 74304,
+    "start_after_calibration": 66240,
+    "excluded_wider_than_span": 1762,
+    "excluded_no_complete_forward_path_before_cutoff": 24,
+    "candidates": 64454
+  },
+  "n_target": 600,
+  "n_selected": 600,
+  "per_stratum": {
+    "Q1_quiet": 150,
+    "Q2": 150,
+    "Q3": 150,
+    "Q4_active": 150
+  },
+  "first_window_end": "2025-10-14T00:00:00+00:00",
+  "last_window_end": "2026-05-31T21:55:00+00:00",
+  "chart_style_sha256": "8028a19e57351ddb5b394a598e23193428142fb0ebdf73f07cddc3dde27225a5",
+  "limitation_statement": "The 4.3% causal-span constraint excludes approximately 1,762 candidate windows (2.66% of the candidate population). Therefore, conclusions from the 600-window discovery experiment apply only to the sampled population within the causal-span constraint and do not establish behavior for those excluded high-span windows.",
+  "windows5m_jsonl_sha256": "a7d28a6c6eb0507c0253511e991ea789808e54ac932fa4df68d888c43fc6d0f2",
+  "n_description_stage": 300
+}
