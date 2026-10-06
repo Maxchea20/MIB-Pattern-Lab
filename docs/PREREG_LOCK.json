@@ -1,0 +1,50 @@
+{
+  "locked_at": "2026-10-06T13:52:23.779841+00:00",
+  "hash_method": "sha256 over file bytes with CRLF normalised to LF",
+  "git_commit": "ce9f148119dc4824ca92c6f5b2f5ea8307be2499",
+  "timeframe": "1h",
+  "discovery_end": "2024-06-01 00:00:00+00:00",
+  "run_dir": "tagset_v1_1h_cut20240601",
+  "n_windows": 452,
+  "n_windows_with_stable_tag": 438,
+  "sha256": {
+    "preregistration": "516c9e595b0f46356aa43ed1842ef560250469269dd4e79ed3505f308359021c",
+    "families_py": "0fc9612bac32de4cfd268cbdfc5b7db4ae1996780cc2d524ae2d9a52cf448b28",
+    "vocab": "3eab422efbf6279fa7efe991230c7b493699e35c8bff3e7b89d649b439805d54",
+    "windows_jsonl": "a876e4757602e5b7cd340676b62ec4b035496508bbe56635549ef0837c696581",
+    "retags_jsonl": "65b4d8fbdc2468c392d8e73d8d00ea32e1e2ef5f72df9b7fee0de5919609468a",
+    "prompt_system": "5ac0b75fd36689bd3994c3a35bdc195e858fd41b27ee423a0fe9cf15d2c93690",
+    "prompt_user_pass1": "4b478c2d878a98a1259a834b6b7482b42d9a4f04f8f4f8e38633d35b111a40cb",
+    "prompt_user_pass2": "7e6d3f8d72fdd94fc8d549ea9f1eacd13fd0ee2dbe2aa9c9fb8030c9005715d9"
+  },
+  "model": "gpt-5.4-mini",
+  "retag_version": "retag-v1",
+  "vocab_version": "vocab-v1",
+  "passes": 2,
+  "chart_style_sha256": "714439bbf8056cf15355dc3d86e17bfbd40b85b1135489621b1f7b5b30560bcd",
+  "primary_families": [
+    "sideways_range",
+    "drift_up",
+    "drift_down"
+  ],
+  "family_window_counts": {
+    "sideways_range": 359,
+    "tight_compression": 5,
+    "choppy_volatile": 8,
+    "drift_up": 71,
+    "drift_down": 74,
+    "stair_step_up": 24,
+    "stair_step_down": 1,
+    "sharp_rally": 12,
+    "sharp_drop": 12,
+    "v_reversal": 4,
+    "inverted_v": 0,
+    "rounded_top": 18,
+    "rounded_bottom": 13,
+    "range_breakout_up": 4,
+    "range_breakdown": 0,
+    "spike_and_retrace": 3,
+    "terminal_spike_up": 15,
+    "terminal_spike_down": 12
+  }
+}
