@@ -1,0 +1,144 @@
+{
+  "experiment": "5m_v1",
+  "model": "gpt-5.4-mini",
+  "attempt_accepted": 1,
+  "created_at": "2026-10-06T16:47:41.929394+00:00",
+  "families": [
+    {
+      "name": "flat_sideways_band",
+      "definition": "A mostly horizontal path with small oscillations, staying within a narrow vertical range."
+    },
+    {
+      "name": "upward_step_rise",
+      "definition": "A path that climbs upward in discrete steps, pauses, or small pullbacks, often ending higher on the right."
+    },
+    {
+      "name": "downward_step_drop",
+      "definition": "A path that moves downward in discrete steps, pauses, or small rebounds, often ending lower on the right."
+    },
+    {
+      "name": "rounded_turning_peak",
+      "definition": "A smooth rise that crests into a rounded top and then turns downward without sharp corners."
+    },
+    {
+      "name": "rounded_turning_trough",
+      "definition": "A smooth decline that bottoms into a rounded low and then turns upward without sharp corners."
+    },
+    {
+      "name": "choppy_reversal",
+      "definition": "A jagged move that changes direction sharply, with uneven candles and alternating rises and drops."
+    },
+    {
+      "name": "flat_end_cluster",
+      "definition": "A narrow, nearly level finish with a small final push, pullback, or clustered candles near one edge."
+    }
+  ],
+  "member_names": {
+    "flat_sideways_band": [
+      "sideways_band",
+      "sideways_drift",
+      "sideways_cluster",
+      "choppy_range",
+      "flat_drift",
+      "flat_band",
+      "sideways_consolidation",
+      "sideways_range",
+      "zigzag",
+      "tight_range",
+      "choppy_band",
+      "flat_consolidation",
+      "flat_range",
+      "choppy_sideways",
+      "sideways_base",
+      "flat_cluster",
+      "flat_base"
+    ],
+    "upward_step_rise": [
+      "step_up",
+      "stair_step_rise",
+      "gentle_rise",
+      "small_rise",
+      "gentle_uptrend",
+      "sharp_rise",
+      "stepped_rise",
+      "spike_up",
+      "vertical_spike",
+      "brief_spike",
+      "choppy_rise"
+    ],
+    "downward_step_drop": [
+      "sharp_drop",
+      "step_down",
+      "downward_drift",
+      "gentle_downtrend",
+      "downward_slope",
+      "steep_drop",
+      "descending_steps",
+      "descending_slope",
+      "gentle_decline",
+      "gentle_drift_down",
+      "sharp_dip",
+      "downward_spike"
+    ],
+    "rounded_turning_peak": [
+      "rounded_top",
+      "rounded_peak",
+      "rounded_hump",
+      "rounded_bump",
+      "small_hump",
+      "small_peak",
+      "flat_top",
+      "small_spike",
+      "sharp_spike",
+      "sharp_rally"
+    ],
+    "rounded_turning_trough": [
+      "rounded_trough",
+      "shallow_trough",
+      "rounded_bottom",
+      "rounded_rebound",
+      "trough",
+      "small_dip",
+      "dip",
+      "shallow_dip",
+      "shallow_pullback",
+      "small_pullback",
+      "small_bounce",
+      "bounce",
+      "rebound",
+      "sharp_rebound",
+      "v_rebound",
+      "v_reversal",
+      "late_dip",
+      "small_rebound",
+      "sharp_rebound",
+      "small_rise"
+    ],
+    "choppy_reversal": [
+      "pullback",
+      "small_candles",
+      "small_alternating_candles",
+      "choppy_base",
+      "sideways_chop",
+      "choppy_drift",
+      "choppy_plateau",
+      "choppy_range",
+      "choppy_band",
+      "choppy_sideways",
+      "choppy_drift",
+      "choppy_base",
+      "choppy_plateau",
+      "long_lower_wick",
+      "small_pulse"
+    ],
+    "flat_end_cluster": [
+      "flat_end",
+      "low_consolidation",
+      "flat_end",
+      "flat_end",
+      "flat_end"
+    ]
+  },
+  "sha256": "645a2963ae742c44bd5fb83f7588536475f1d3d5dde7e4309106986bc65d3fae",
+  "d2_template_sha256": "73dae31319d692a86c0021e358efd6ef72a73b8752fb78707e50bfdb6521ddff"
+}
