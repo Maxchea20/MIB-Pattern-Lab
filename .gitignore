@@ -1,0 +1,22 @@
+# Market data and secrets: NEVER commit
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Generated output (keep folder, ignore contents except reports kept deliberately)
+results/sample_charts/*
+!results/sample_charts/.gitkeep
+results/single_chart/
+results/db_inspection.txt
