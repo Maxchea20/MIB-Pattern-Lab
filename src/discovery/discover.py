@@ -54,19 +54,20 @@ def load_env(path=None) -> None:
 
 
 # ----------------------------------------------------------------- request --
-def build_messages(png_bytes: bytes) -> list[dict]:
+def build_messages(png_bytes: bytes, system: str | None = None, user: str | None = None) -> list[dict]:
     b64 = base64.b64encode(png_bytes).decode()
     return [
-        {"role": "system", "content": prompts.SYSTEM_PROMPT},
+        {"role": "system", "content": system or prompts.SYSTEM_PROMPT},
         {"role": "user", "content": [
-            {"type": "text", "text": prompts.USER_PROMPT},
+            {"type": "text", "text": user or prompts.USER_PROMPT},
             {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
         ]},
     ]
 
 
 class OpenAIDescriber:
-    def __init__(self, model: str):
+    def __init__(self, model: str, system: str | None = None, user: str | None = None):
+        self.system, self.user = system, user
         load_env()
         key = os.environ.get("OPENAI_API_KEY")
         if not key:
@@ -77,7 +78,7 @@ class OpenAIDescriber:
 
     def describe(self, png_bytes: bytes) -> dict:
         r = self.client.chat.completions.create(
-            model=self.model, messages=build_messages(png_bytes),
+            model=self.model, messages=build_messages(png_bytes, self.system, self.user),
             response_format={"type": "json_object"})
         u = r.usage
         return {"text": r.choices[0].message.content or "",

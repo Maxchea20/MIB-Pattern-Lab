@@ -72,3 +72,8 @@ DISCOVERY_CHART_STYLE = {"axis_labels": "pct", "time_labels": "relative"}
 SPAN_QUANTILE = 0.99      # fixed span = this quantile of window ranges in the discovery period
 SPAN_STEP_PCT = 0.05      # span rounded UP to a multiple of this
 DISCOVERY_DIR = ROOT / "results" / "discovery"
+
+# --- Stage 3: frozen vocabulary re-tagging + recurrence counts ----------------------------
+RETAG_PASSES = 2          # independent passes per chart (even passes list the vocabulary reversed)
+MIN_SUPPORT_N = 3         # a shape counts as "recurring" only if stable on >= this many charts
+MIN_SUPPORT_FRAC = 0.05   # ... and on >= this fraction of charts

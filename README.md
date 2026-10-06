@@ -79,3 +79,19 @@ python -m src.discovery.discover --count 200    # real run, model = config.OPENA
 * **Anonymised axes:** price axis = % vs. close at T; time axis = candle offsets `T-50 ... T`. No dates
   or absolute prices reach the model (it cannot recognise real BTC history from labels).
 * Results go to `results/discovery/<DISCOVERY_RUN>/`, so earlier runs with different images are never mixed in.
+
+## Stage 3: frozen vocabulary + recurrence counts (still no market outcomes)
+```
+python -m src.discovery.retag --dry-run     # shows prompt + number of API calls
+python -m src.discovery.retag               # re-tag the run's charts, RETAG_PASSES (2) independent passes
+python -m src.discovery.vocab_report        # counts + report: results/discovery/<run>/vocab_report.html
+```
+* `src/discovery/vocab.py` is a fixed list of 18 shape names + `none`, with visual definitions
+  (hash-pinned: `VOCAB_SHA256`). Distilled from the free-form descriptions; no direction/outcome language.
+* Re-tagging is image-only (the earlier text is not shown), reads the PNGs already rendered in the run
+  folder (verified against their recorded hashes) and needs no database.
+* Pass 2 lists the vocabulary in reverse order to expose order bias. Unknown/invalid tags are errors
+  (never silently fixed) and are retried.
+* A chart's **stable** tags are those present in every pass. Only stable tags are counted. A shape is
+  **recurring** only if stable on >= `MIN_SUPPORT_N` charts and >= `MIN_SUPPORT_FRAC` of charts.
+  The report also shows primary-tag agreement between passes: if that is low, the labelling is not reliable.
