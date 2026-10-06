@@ -1,0 +1,22 @@
+{
+  "code_sha256": "892515531f0a7696f513bfdd26dfb3e0a01fd353b2aca76a9b21464939513987",
+  "files": [
+    "src/charts/windows.py",
+    "src/data/loader.py",
+    "src/discovery/audit.py",
+    "src/discovery/discover.py",
+    "src/discovery/families.py",
+    "src/discovery/retag.py",
+    "src/discovery/tagset.py",
+    "src/discovery/vocab.py",
+    "src/outcomes/__init__.py",
+    "src/outcomes/analyze.py",
+    "src/outcomes/forward.py",
+    "src/outcomes/stats.py",
+    "src/validation/window_validation.py"
+  ],
+  "frozen_at": "2026-10-06T14:13:21.640442+00:00",
+  "code_git_commit": "58f5a4e618fc3897b5702b944788d9b1124262de",
+  "preregistration_sha256": "516c9e595b0f46356aa43ed1842ef560250469269dd4e79ed3505f308359021c",
+  "note": "Frozen before any outcome was computed. Any change to these files blocks the analysis (check_freeze)."
+}
