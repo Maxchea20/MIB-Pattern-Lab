@@ -38,10 +38,12 @@ pattern survives the hold-out.
 ## 3. Discovery sample (option C: fill the remaining capacity)
 * Start: 431 non-overlapping windows (`tagset_v1_1h_cut20240601`, stratified by window range).
 * Top-up: `python -m src.discovery.tagset --timeframe 1h --topup 999` adds every remaining non-overlapping window
-  inside the discovery period (target ~580 total), same chart style (hash-checked), same frozen tagging setup.
+  inside the discovery period, same chart style (hash-checked), same frozen tagging setup.
   New windows never overlap each other or the originals and never use hold-out data.
 * Discovery window rules (frozen): 60 closed gap-free 1h candles; window end < 2024-06-01; windows >= 60 candles
   apart; window range <= the fixed span (wider windows are excluded, not clipped).
+* Actual capacity turned out smaller than the ~580 first estimated: 452 windows are tagged after the top-up
+  (431 + 21; confirmed by the lock record). The sample size is whatever the lock record states.
 * The discovery sample is **frozen** when tagging finishes; its `windows.jsonl` sha256 goes into the lock record.
 * The sample is stratified by window range (a chart property, not an outcome). Baselines and nulls use this same
   sample; `range_pct` is a control covariate (section 6).
@@ -143,10 +145,11 @@ Every other family (primary families that did not pass discovery, and all explor
 descriptively on the hold-out. It is **not** treated as a confirmatory success or failure.
 
 ## 10. Power (stated up front)
-With ~580 windows (drift families ~90 each), 80% power and 15 maxT cells, the minimum detectable effect is about
-0.43 x the SD of `ret_H`. Assuming BTC 1h-candle SD of roughly 0.6%, 1.1%, 1.5%, 2.1%, 3.0% at 1/3/6/12/24 h
-(to be checked against the data) that is ~0.26 / 0.46 / 0.65 / 0.9 / 1.3 percentage points. Plausible true effects
-are smaller. Underpowered negative results are reported as INCONCLUSIVE / LOW POWER, not as proof of no edge.
+With ~450 windows (drift families ~70 each, sideways ~360), 80% power and 15 maxT cells, the minimum detectable
+effect is about 0.49 x the SD of `ret_H` (for a drift family vs the rest). Assuming BTC 1h-candle SD of roughly
+0.6%, 1.1%, 1.5%, 2.1%, 3.0% at 1/3/6/12/24 h (to be checked against the data) that is ~0.29 / 0.54 / 0.74 / 1.0 /
+1.5 percentage points. Plausible true effects are smaller. Underpowered negative results are reported as
+INCONCLUSIVE / LOW POWER, not as proof of no edge. The exact MDE_H is recomputed from the data (section 8).
 
 ## 11. Constraints
 * No trading rules, entry/exit logic, TP/SL or position sizing anywhere in this experiment.
