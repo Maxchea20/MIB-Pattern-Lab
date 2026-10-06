@@ -25,6 +25,10 @@ COLUMN_OVERRIDES = {      # logical name -> actual column name
 # or "keep_last" (explicit, documented de-duplication).
 ON_DUPLICATES = "error"
 
+# The newest stored candle(s) may have been written while still forming (e.g. DB synced
+# mid-candle). Drop this many from the END of the loaded series. Set 0 to disable.
+DROP_LAST_CANDLES = 1
+
 # --- Windows ----------------------------------------------------------------
 LOOKBACK = 60             # candles per window; window = candles[T-59 .. T]
 

@@ -270,7 +270,13 @@ def load_candles(db_path=None, symbol=None, timeframe=None, as_of=None,
         raw = fetch_source(conn, src)
     finally:
         conn.close()
-    return build_candles(raw, symbol, timeframe, src.label(), as_of, on_duplicates)
+    cs = build_candles(raw, symbol, timeframe, src.label(), as_of, on_duplicates)
+    n = int(getattr(config, "DROP_LAST_CANDLES", 0))
+    if n > 0:
+        cs.df = cs.df.iloc[:-n].reset_index(drop=True)
+        cs.stats["trailing_dropped"] = n
+        cs.stats["rows_usable"] = len(cs.df)
+    return cs
 
 
 def build_candles(raw: pd.DataFrame, symbol, timeframe, source="", as_of=None,

@@ -13,7 +13,7 @@ import pandas as pd
 
 import config
 from src.data.loader import (OHLC, connect_readonly, discover_sources, fetch_source,
-                             invalid_ohlc_mask, list_tables, parse_timestamps, tf_to_seconds,
+                             invalid_ohlc_mask, list_tables, norm_symbol, parse_timestamps, tf_to_seconds,
                              DataError)
 
 
@@ -40,6 +40,37 @@ def analyse_source(df: pd.DataFrame, tf_hint: str | None) -> dict:
         res["largest_gap_candles"] = int(round(gaps.max() / step)) - 1 if len(gaps) else 0
         res["off_grid_intervals"] = int((diffs < step).sum())
     return res
+
+
+def convention_check(conn, sources) -> list[str]:
+    """Is `ts` the candle OPEN time or CLOSE time? Compare 1h vs 5m of the same symbol:
+    a 1h candle's open must equal the open of the 5m candle that STARTS the hour."""
+    def find(tf):
+        for s in sources:
+            if s.timeframe_value and s.symbol_value and norm_symbol(s.symbol_value) in ("BTCUSDT",):
+                try:
+                    if tf_to_seconds(s.timeframe_value) == tf_to_seconds(tf):
+                        return s
+                except DataError:
+                    pass
+    s5, s1h = find("5m"), find("1h")
+    if not (s5 and s1h):
+        return ["Timestamp convention check: skipped (need BTC 5m and 1h sources)"]
+    a = fetch_source(conn, s5).rename(columns={"open": "o5"}).set_index("timestamp")["o5"]
+    b = fetch_source(conn, s1h).set_index("timestamp")["open"]
+    a = a[~a.index.duplicated()]
+    b = b[~b.index.duplicated()]
+    unit = 3600 if b.index.max() < 1e11 else 3600 * 1000
+    same_open = (b.reindex(b.index).values == a.reindex(b.index).values)
+    open_hits = float(pd.Series(same_open).mean())
+    shifted = a.reindex(b.index - (unit - unit // 12)).values   # 5m candle starting 55m before ts
+    close_hits = float(pd.Series(b.values == shifted).mean())
+    verdict = ("OPEN time (as assumed)" if open_hits > 0.9 and open_hits > close_hits else
+               "CLOSE time (assumption WRONG - tell Claude)" if close_hits > 0.9 else "UNCLEAR")
+    return ["Timestamp convention check (1h open vs 5m open):",
+            f"  1h.open == 5m.open at same ts:        {open_hits:.1%}",
+            f"  1h.open == 5m.open at ts-55m (close-time): {close_hits:.1%}",
+            f"  => ts looks like: {verdict}", ""]
 
 
 def build_report(db_path) -> str:
@@ -83,6 +114,7 @@ def build_report(db_path) -> str:
                           f"(in {r.get('gap_count', 0)} gaps, largest {r.get('largest_gap_candles', 0)} candles, "
                           f"step {r.get('step_s')}s, off-grid intervals {r.get('off_grid_intervals', 0)})", "",
                           f"Invalid rows:\n{r['invalid_rows']}", ""]
+        lines += convention_check(conn, sources)
     finally:
         conn.close()
     return "\n".join(lines)
@@ -97,7 +129,7 @@ def main(argv=None) -> int:
     print(rep)
     if a.out:
         Path(a.out).parent.mkdir(parents=True, exist_ok=True)
-        Path(a.out).write_text(rep)
+        Path(a.out).write_text(rep, encoding="utf-8")
     return 0
 
 

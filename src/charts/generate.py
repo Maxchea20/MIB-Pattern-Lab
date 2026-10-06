@@ -35,7 +35,7 @@ def sha256(path) -> str:
 
 
 def write_reports(out: Path, entries: list[dict], meta: dict) -> None:
-    (out / "manifest.json").write_text(json.dumps({"meta": meta, "charts": entries}, indent=2))
+    (out / "manifest.json").write_text(json.dumps({"meta": meta, "charts": entries}, indent=2), encoding="utf-8")
     head = (f"Symbol: {meta['symbol']} | Timeframe: {meta['timeframe']} | Window: {meta['lookback']} candles | "
             f"Normalization: {meta['normalization']}")
     md = ["# Sample chart QA report", "", head, "",
@@ -44,7 +44,7 @@ def write_reports(out: Path, entries: list[dict], meta: dict) -> None:
         md += [f"## {e['end_ts']}", "",
                f"- symbol: {e['symbol']}\n- timeframe: {e['timeframe']}\n- window size: {e['lookback']}\n"
                f"- window: {e['start_ts']} → {e['end_ts']}", "", f"![{e['file']}]({e['file']})", ""]
-    (out / "index.md").write_text("\n".join(md))
+    (out / "index.md").write_text("\n".join(md), encoding="utf-8")
     cards = "".join(
         f"<figure><img src='{escape(e['file'])}' width='640'><figcaption><b>{escape(e['end_ts'])}</b><br>"
         f"{escape(e['symbol'])} · {escape(e['timeframe'])} · {e['lookback']} candles<br>"
@@ -53,7 +53,8 @@ def write_reports(out: Path, entries: list[dict], meta: dict) -> None:
         "<!doctype html><meta charset='utf-8'><title>Sample charts</title>"
         "<style>body{font-family:sans-serif;margin:20px}figure{display:inline-block;margin:10px;"
         "vertical-align:top}figcaption{font-size:12px}</style>"
-        f"<h1>Sample chart QA</h1><p>{escape(head)}</p><p>Source: {escape(meta['source'])}</p>{cards}")
+        f"<h1>Sample chart QA</h1><p>{escape(head)}</p><p>Source: {escape(meta['source'])}</p>{cards}",
+        encoding="utf-8")
 
 
 def main(argv=None) -> int:
