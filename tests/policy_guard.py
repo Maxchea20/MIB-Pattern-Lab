@@ -34,7 +34,7 @@ EXECUTION_PARAMS = {
 }
 EXCHANGE_HOSTS = re.compile(r"(binance|bybit|okx|kucoin|bitget|deribit|kraken|coinbase|bitfinex|bitmex|hyperliquid|huobi|phemex)"
                             r"[a-z0-9.\-]*\.(com|io|us|net|exchange|pro)", re.I)
-PROTECTED_DIRS = ("src/discovery/", "src/charts/", "src/data/", "src/validation/", "src/outcomes/", "src/exp5m/")
+PROTECTED_DIRS = ("src/discovery/", "src/charts/", "src/data/", "src/validation/", "src/outcomes/", "src/exp5m/", "src/setups/")
 GATE_FILE = "docs/EXECUTION_SPEC_LOCK.json"
 REQUIRED_KEYS = ("spec_file", "spec_sha256", "source_experiment", "discovery_pass_record", "holdout_pass_record",
                  "checklist_complete", "allowed_paths", "frozen_at")
