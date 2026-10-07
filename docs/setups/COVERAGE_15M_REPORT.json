@@ -1,0 +1,317 @@
+{
+  "purpose": "read-only feasibility audit for the planned 15M setup-discovery experiment; no outcome computed",
+  "database_file": "market_Data_Clean.db",
+  "database_bytes": 52363264,
+  "database_sha256": "c53641f8eace62197c7a765794817a1b9a711c801f042fb5483c1004ded4aeae",
+  "symbol": "BTC/USDT",
+  "sources_found_in_database": [
+    "candles | symbol=BTC_USDT | timeframe=15m",
+    "candles | symbol=BTC_USDT | timeframe=1d",
+    "candles | symbol=BTC_USDT | timeframe=1h",
+    "candles | symbol=BTC_USDT | timeframe=1m",
+    "candles | symbol=BTC_USDT | timeframe=1w",
+    "candles | symbol=BTC_USDT | timeframe=30m",
+    "candles | symbol=BTC_USDT | timeframe=4h",
+    "candles | symbol=BTC_USDT | timeframe=5m",
+    "candles | symbol=BTC_USDT | timeframe=8h"
+  ],
+  "series": {
+    "15m": {
+      "available": true,
+      "database_file": "market_Data_Clean.db",
+      "database_bytes": 52363264,
+      "database_sha256": "c53641f8eace62197c7a765794817a1b9a711c801f042fb5483c1004ded4aeae",
+      "source": "candles | symbol=BTC_USDT | timeframe=15m",
+      "symbol": "BTC/USDT",
+      "timeframe": "15m",
+      "step_seconds": 900,
+      "stored_timestamp_type": "numeric epoch",
+      "stored_timestamp_unit": "seconds",
+      "timezone_assumption": "UTC (epoch is timezone-free; ISO strings parsed as UTC)",
+      "rows": 37018,
+      "unique_timestamps": 37018,
+      "earliest": "2025-09-15T20:15:00+00:00",
+      "latest": "2026-10-06T10:30:00+00:00",
+      "expected_candles_on_grid": 37018,
+      "missing_candles_total": 0,
+      "gap_count": 0,
+      "largest_gap_candles": 0,
+      "gaps": [],
+      "duplicate_timestamps": 0,
+      "rows_in_original_order_sorted": true,
+      "off_grid_timestamps": 0,
+      "intervals_shorter_than_step": 0,
+      "invalid_ohlc_rows": 0,
+      "open_time_convention_check": [
+        "Timestamp convention check (1h open vs 5m open):",
+        "  overlapping 1h candles compared: 9255",
+        "  1h.open == 5m.open at same ts:        100.0%",
+        "  1h.open == 5m.open at ts-55m (close-time): 0.0%",
+        "  => ts looks like: OPEN time (as assumed)",
+        ""
+      ],
+      "loader": {
+        "rows_usable_after_loader": 37017,
+        "rows_raw": 37018,
+        "invalid_dropped": 0,
+        "unclosed_dropped": 0,
+        "rows_usable": 37017,
+        "trailing_dropped": 1,
+        "DROP_LAST_CANDLES": 1,
+        "first_usable": "2025-09-15T20:15:00+00:00",
+        "last_usable": "2026-10-06T10:15:00+00:00"
+      },
+      "candles_per_month": {
+        "2025-09": 1455,
+        "2025-10": 2976,
+        "2025-11": 2880,
+        "2025-12": 2976,
+        "2026-01": 2976,
+        "2026-02": 2688,
+        "2026-03": 2976,
+        "2026-04": 2880,
+        "2026-05": 2976,
+        "2026-06": 2880,
+        "2026-07": 2976,
+        "2026-08": 2976,
+        "2026-09": 2880,
+        "2026-10": 523
+      }
+    },
+    "5m": {
+      "available": true,
+      "database_file": "market_Data_Clean.db",
+      "database_bytes": 52363264,
+      "database_sha256": "c53641f8eace62197c7a765794817a1b9a711c801f042fb5483c1004ded4aeae",
+      "source": "candles | symbol=BTC_USDT | timeframe=5m",
+      "symbol": "BTC/USDT",
+      "timeframe": "5m",
+      "step_seconds": 300,
+      "stored_timestamp_type": "numeric epoch",
+      "stored_timestamp_unit": "seconds",
+      "timezone_assumption": "UTC (epoch is timezone-free; ISO strings parsed as UTC)",
+      "rows": 111068,
+      "unique_timestamps": 111068,
+      "earliest": "2025-09-15T19:05:00+00:00",
+      "latest": "2026-10-06T10:40:00+00:00",
+      "expected_candles_on_grid": 111068,
+      "missing_candles_total": 0,
+      "gap_count": 0,
+      "largest_gap_candles": 0,
+      "gaps": [],
+      "duplicate_timestamps": 0,
+      "rows_in_original_order_sorted": true,
+      "off_grid_timestamps": 0,
+      "intervals_shorter_than_step": 0,
+      "invalid_ohlc_rows": 0,
+      "open_time_convention_check": [
+        "Timestamp convention check (1h open vs 5m open):",
+        "  overlapping 1h candles compared: 9255",
+        "  1h.open == 5m.open at same ts:        100.0%",
+        "  1h.open == 5m.open at ts-55m (close-time): 0.0%",
+        "  => ts looks like: OPEN time (as assumed)",
+        ""
+      ],
+      "loader": {
+        "rows_usable_after_loader": 111067,
+        "rows_raw": 111068,
+        "invalid_dropped": 0,
+        "unclosed_dropped": 0,
+        "rows_usable": 111067,
+        "trailing_dropped": 1,
+        "DROP_LAST_CANDLES": 1,
+        "first_usable": "2025-09-15T19:05:00+00:00",
+        "last_usable": "2026-10-06T10:35:00+00:00"
+      },
+      "candles_per_month": {
+        "2025-09": 4379,
+        "2025-10": 8928,
+        "2025-11": 8640,
+        "2025-12": 8928,
+        "2026-01": 8928,
+        "2026-02": 8064,
+        "2026-03": 8928,
+        "2026-04": 8640,
+        "2026-05": 8928,
+        "2026-06": 8640,
+        "2026-07": 8928,
+        "2026-08": 8928,
+        "2026-09": 8640,
+        "2026-10": 1569
+      }
+    },
+    "1m": {
+      "available": true,
+      "database_file": "market_Data_Clean.db",
+      "database_bytes": 52363264,
+      "database_sha256": "c53641f8eace62197c7a765794817a1b9a711c801f042fb5483c1004ded4aeae",
+      "source": "candles | symbol=BTC_USDT | timeframe=1m",
+      "symbol": "BTC/USDT",
+      "timeframe": "1m",
+      "step_seconds": 60,
+      "stored_timestamp_type": "numeric epoch",
+      "stored_timestamp_unit": "seconds",
+      "timezone_assumption": "UTC (epoch is timezone-free; ISO strings parsed as UTC)",
+      "rows": 74012,
+      "unique_timestamps": 74012,
+      "earliest": "2026-08-11T18:01:00+00:00",
+      "latest": "2026-10-06T10:43:00+00:00",
+      "expected_candles_on_grid": 80203,
+      "missing_candles_total": 6191,
+      "gap_count": 2,
+      "largest_gap_candles": 3376,
+      "gaps": [
+        {
+          "after": "2026-09-27T11:02:00+00:00",
+          "resumes": "2026-09-29T09:58:00+00:00",
+          "missing_candles": 2815
+        },
+        {
+          "after": "2026-10-02T06:16:00+00:00",
+          "resumes": "2026-10-04T14:33:00+00:00",
+          "missing_candles": 3376
+        }
+      ],
+      "duplicate_timestamps": 0,
+      "rows_in_original_order_sorted": true,
+      "off_grid_timestamps": 0,
+      "intervals_shorter_than_step": 0,
+      "invalid_ohlc_rows": 0,
+      "open_time_convention_check": [
+        "Timestamp convention check (1h open vs 5m open):",
+        "  overlapping 1h candles compared: 9255",
+        "  1h.open == 5m.open at same ts:        100.0%",
+        "  1h.open == 5m.open at ts-55m (close-time): 0.0%",
+        "  => ts looks like: OPEN time (as assumed)",
+        ""
+      ],
+      "loader": {
+        "rows_usable_after_loader": 74011,
+        "rows_raw": 74012,
+        "invalid_dropped": 0,
+        "unclosed_dropped": 0,
+        "rows_usable": 74011,
+        "trailing_dropped": 1,
+        "DROP_LAST_CANDLES": 1,
+        "first_usable": "2026-08-11T18:01:00+00:00",
+        "last_usable": "2026-10-06T10:42:00+00:00"
+      },
+      "candles_per_month": {
+        "2026-08": 29159,
+        "2026-09": 40385,
+        "2026-10": 4468
+      }
+    }
+  },
+  "child_candle_cross_checks": {
+    "15m_vs_5m": {
+      "children_per_parent": 3,
+      "parents": 37017,
+      "parents_off_grid": 0,
+      "parents_with_complete_children": 37017,
+      "parents_without_complete_children": 0,
+      "share_complete": 1.0,
+      "first_incomplete": [],
+      "aggregate_mismatch": {
+        "open": {
+          "mismatching_parents": 5,
+          "max_relative_diff": 3.941241716354464e-05
+        },
+        "high": {
+          "mismatching_parents": 6,
+          "max_relative_diff": 0.00032139200947534747
+        },
+        "low": {
+          "mismatching_parents": 5,
+          "max_relative_diff": 0.0007240624067474386
+        },
+        "close": {
+          "mismatching_parents": 4,
+          "max_relative_diff": 0.0007391132665768603
+        }
+      },
+      "open_time_check": {
+        "parent_open_equals_child_open_at_same_label": 0.9998649269254667,
+        "parent_open_equals_child_open_one_parent_step_earlier": 0.0007293946024799417
+      }
+    },
+    "15m_vs_1m": {
+      "children_per_parent": 15,
+      "parents": 37017,
+      "parents_off_grid": 0,
+      "parents_with_complete_children": 4931,
+      "parents_without_complete_children": 32086,
+      "share_complete": 0.13320906610476269,
+      "first_incomplete": [
+        "2025-09-15T20:15:00+00:00",
+        "2025-09-15T20:30:00+00:00",
+        "2025-09-15T20:45:00+00:00",
+        "2025-09-15T21:00:00+00:00",
+        "2025-09-15T21:15:00+00:00",
+        "2025-09-15T21:30:00+00:00",
+        "2025-09-15T21:45:00+00:00",
+        "2025-09-15T22:00:00+00:00",
+        "2025-09-15T22:15:00+00:00",
+        "2025-09-15T22:30:00+00:00"
+      ],
+      "aggregate_mismatch": {
+        "open": {
+          "mismatching_parents": 0,
+          "max_relative_diff": 0.0
+        },
+        "high": {
+          "mismatching_parents": 0,
+          "max_relative_diff": 0.0
+        },
+        "low": {
+          "mismatching_parents": 0,
+          "max_relative_diff": 0.0
+        },
+        "close": {
+          "mismatching_parents": 0,
+          "max_relative_diff": 0.0
+        }
+      },
+      "open_time_check": {
+        "parent_open_equals_child_open_at_same_label": 1.0,
+        "parent_open_equals_child_open_one_parent_step_earlier": 0.0012165450121654502
+      }
+    }
+  },
+  "discovery_holdout_feasibility": {
+    "cutoff": "2026-06-01T00:00:00Z",
+    "lookback": 96,
+    "forward": 24,
+    "step_seconds": 900,
+    "usable_candles_total": 37017,
+    "usable_candles_before_cutoff": 24783,
+    "usable_candles_from_cutoff": 12234,
+    "first_usable": "2025-09-15T20:15:00+00:00",
+    "last_usable": "2026-10-06T10:15:00+00:00",
+    "holdout_days_of_data": 127.4375,
+    "discovery_positions_with_full_lookback_and_forward_path": 24664,
+    "holdout_positions_with_full_lookback_and_forward_path": 12210,
+    "discovery_max_windows_at_spacing_32_upper_bound": 770,
+    "usable_candles_per_month": {
+      "2025-09": 1455,
+      "2025-10": 2976,
+      "2025-11": 2880,
+      "2025-12": 2976,
+      "2026-01": 2976,
+      "2026-02": 2688,
+      "2026-03": 2976,
+      "2026-04": 2880,
+      "2026-05": 2976,
+      "2026-06": 2880,
+      "2026-07": 2976,
+      "2026-08": 2976,
+      "2026-09": 2880,
+      "2026-10": 522
+    }
+  },
+  "warnings": [
+    "1m: 2 gaps (6191 candles missing; largest 3376)",
+    "15m_vs_5m: parent OHLC differs from the aggregate of its children: {'open': 5, 'high': 6, 'low': 5, 'close': 4}",
+    "15m_vs_1m: 32086 parent candles lack complete children"
+  ]
+}
