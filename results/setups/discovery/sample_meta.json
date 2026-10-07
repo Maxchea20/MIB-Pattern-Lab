@@ -1,0 +1,56 @@
+{
+  "experiment": "setups_15m_v1",
+  "timeframe": "15m",
+  "lookback": 96,
+  "discovery_end": "2026-06-01T00:00:00Z",
+  "funnel": {
+    "closed_candles_before_cutoff": 26208,
+    "full_lookback_windows": 26113,
+    "excluded_no_complete_forward_path_before_cutoff": 24,
+    "candidates": 26089
+  },
+  "feature_cutpoints_terciles": {
+    "eff": [
+      0.0576381798242057,
+      0.1302542033626903
+    ],
+    "abs_net": [
+      0.730660704390762,
+      1.853618183798611
+    ],
+    "re": [
+      0.39804721460576203,
+      0.6903939962476526
+    ],
+    "sharp": [
+      1.1177881120008961,
+      1.7670499049361397
+    ]
+  },
+  "n_target": 600,
+  "n_selected": 558,
+  "per_stratum": {
+    "S1_directional": 100,
+    "S2_sideways": 100,
+    "S3_expansion": 100,
+    "S4_compression": 100,
+    "S5_sharp": 78,
+    "S6_slow": 80
+  },
+  "shortfall": {
+    "S5_sharp": 22,
+    "S6_slow": 20
+  },
+  "first_window_end": "2025-09-02T02:30:00+00:00",
+  "last_window_end": "2026-05-31T17:30:00+00:00",
+  "chart_style_sha256": "c416cdeabdbdf74869afc2273abdc57d7f41e266792974e54092496dfb1bb8ba",
+  "seed_order": 777,
+  "min_gap_candles": 32,
+  "disclosure": "Tercile cut-points use all discovery candidates (chart features only); no outcome is used for selection. Forward-path existence is checked from timestamps only.",
+  "database": {
+    "file": "research_binance.db",
+    "bytes": 71098368,
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f"
+  },
+  "windows_setups_jsonl_sha256": "30a621cf14c247466fd1d294546b982189f8004580c3221f8449909c6422b727"
+}
