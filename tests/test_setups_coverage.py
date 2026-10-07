@@ -96,3 +96,30 @@ def test_audit_is_read_only_and_makes_no_outcome(tmp_path):
     blob = str(r).lower()
     for word in ("forward_return", "mfe", "mae", "outcome_label"):
         assert word not in blob
+
+
+def test_canonical_dataset_guard():
+    import pytest
+    ca.check_database_name("data/research_binance.db")
+    for bad in ("data/market_Data_Clean.db", "C:/x/MARKET_DATA_CLEAN.DB"):
+        with pytest.raises(SystemExit):
+            ca.check_database_name(bad, allow_other=True)           # the replaced dataset is refused even with the override
+    with pytest.raises(SystemExit):
+        ca.check_database_name("data/other.db")
+    ca.check_database_name("data/other.db", allow_other=True)
+
+
+def test_report_states_dataset_lists_btc_timeframes_and_period_split(tmp_path):
+    db = tmp_path / "research_binance.db"
+    make_db(db, drop_5m=100, bump_15m_high=50)
+    r = run(db)
+    assert r["dataset_statement"] == "data/research_binance.db is the canonical dataset for the Setup Discovery experiment."
+    assert r["canonical_dataset"] is True and r["database_bytes"] == db.stat().st_size and len(r["database_sha256"]) == 64
+    assert r["btc_usdt_timeframes_available"] == ["1m", "5m", "15m"]
+    c5 = r["child_candle_cross_checks"]["15m_vs_5m"]
+    bp = c5["by_period"]
+    assert bp["parents_before_cutoff"] + bp["parents_from_cutoff"] == c5["parents"]
+    assert any(e["field"] == "high" for e in c5["mismatch_examples"])
+    other = tmp_path / "m.db"
+    make_db(other)
+    assert "NOT the canonical dataset" in run(other)["dataset_statement"]
