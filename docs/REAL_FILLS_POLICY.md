@@ -16,6 +16,9 @@ historical market data. This experiment series is designed so that this cannot h
   the historical price series**, taken from the close of the last candle of a visual window. They are **not trade fills**.
   The prices used (for example a future high or low) were **not shown to be executable**. MFE/MAE must never be called a
   "realized trade", a "profit" or an "executable price", and no report may imply that they were.
+* **Experiment 3 (Setup Discovery) is also not a trading backtest.** Its outcome measurements are descriptive statistics
+  measured from the **analytical reference price** (see section 11). The analytical reference price is **not** an execution
+  price: **analytical reference price ≠ execution price**.
 * No order, fill, position, stop, take-profit, spread, slippage or fee exists anywhere in the current code or reports.
 * **No trading backtest may be implemented** until the separate execution specification in section 8 exists and is frozen.
   A repository test (`tests/test_policy.py`) makes the accidental creation of backtest/execution/fill code fail loudly.
@@ -96,6 +99,18 @@ verbatim:
 > Forward return, future high, future low, MFE and MAE are descriptive statistics of the historical price series,
 > measured from the close of the last candle of each visual window. They are not trade fills, they were not shown to be
 > executable prices, and they must not be read as realized trades.
+
+**Experiment 3 (Setup Discovery, `docs/PREREGISTRATION_SETUPS.md`).** Every final report and every `summary.json` of that
+experiment must instead contain this sentence verbatim:
+
+> Forward return, future high, future low, MFE and MAE are descriptive statistics of the historical price series,
+> measured from the analytical reference price (the open of the candle after the trigger candle). They are not trade
+> fills, they were not shown to be executable prices, and they must not be read as realized trades.
+
+The permanent distinction is: **analytical reference price ≠ execution price.** The open of the candle after a trigger is
+a measurement reference chosen because it is the earliest price that could in principle follow a trigger that became known
+at a candle close; it was not shown to be obtainable, and no report may call it an entry, a fill or an executable price.
+A trade conversion still requires the separate frozen execution specification of section 8.
 
 ## 12. Pre-implementation checklist for any future trading backtest
 - [ ] A frozen execution specification exists (section 8) and its hash is committed.

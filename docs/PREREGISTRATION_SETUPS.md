@@ -133,12 +133,17 @@ read of rows > t.
 **Frequency sanity (no outcomes):** a recognizer that triggers on < 0.2 % or > 10 % of discovery candles is classified
 NOT CODEABLE / NOT SELECTIVE.
 
-**Fidelity audit (outcome-blind, within the AI budget).** A sample of up to 100 recognizer trigger cases and 100
-non-trigger cases (stratified like the Stage A sample) is shown to the model with the frozen definition text and asked
-whether the setup is present at the right edge. **Precision** = share of trigger cases judged present;
-**recall** = share of Stage A `ACTIONABLE_NOW` charts supporting that candidate on which the recognizer is PRESENT or
-TRIGGERED within the last 2 candles. Gate: **precision ≥ 70 % and recall ≥ 50 %**, else NOT CODEABLE FAITHFULLY.
-Fidelity is not profitability.
+**Fidelity audit (outcome-blind, within the AI budget).**
+*Precision.* A sample of up to 100 recognizer trigger cases and 100 non-trigger cases (stratified like the Stage A
+sample) is shown to the model with the frozen definition text and asked whether the setup is present at the right edge.
+Precision = share of trigger cases judged present. Gate: **precision ≥ 70 %**.
+*Recall (mechanical, candidate-specific).* For a candidate *K*, let **E_K** = the Stage A charts with
+`status = ACTIONABLE_NOW` whose chart id is in *K*'s `supporting_ids` (the "eligible supporting charts").
+`numerator` = the charts in E_K on which the **frozen recognizer of K** is PRESENT, or has TRIGGERED within the last 2
+candles, at the chart's end T (evaluated on candles ≤ T only); `denominator` = |E_K|; recall = numerator ÷ denominator.
+Gate: **recall ≥ 50 %**, evaluated **only if |E_K| ≥ 10**. If |E_K| < 10 the recall gate is **not** evaluated and fidelity
+is classified **insufficient evidence → NOT CODEABLE FAITHFULLY**; a tiny denominator can never pass. The 70 % / 50 %
+thresholds are unchanged. Fidelity is not profitability.
 
 **F2 — recognizer freeze:** recognizer code, parameter table, tests, fidelity result, frequency result. The recognizer
 author never sees outcomes: the recognizer is frozen **before** the outcome dataset is exposed.
@@ -158,8 +163,8 @@ containing both a favourable and an invalidating level, are resolved with the **
 order is still undeterminable (and 1-minute data cannot settle it) the event is **AMBIGUOUS**: counted adversely in the
 primary result and reported separately with its count. Forward return, future high/low, MFE and MAE are **not fills**.
 
-**Required statement (every report and `summary.json`; proposed wording for Experiment 3, pending your approval of a
-matching amendment to policy section 11):**
+**Required statement (every report and `summary.json`; Experiment 3 wording, recorded verbatim in policy sections 0
+and 11):**
 
 > Forward return, future high, future low, MFE and MAE are descriptive statistics of the historical price series,
 > measured from the analytical reference price (the open of the candle after the trigger candle). They are not trade
@@ -171,20 +176,45 @@ Direction-signed outcome for an occurrence *i* of a directional setup: `y_i,H = 
 `−1` (down) and `r` the raw forward return from the reference price. The hypotheses are only the frozen setups ×
 5 horizons (**at most 8 × 5 = 40 cells**).
 
-* **Estimand:** `D_s,H = mean_i d_i · (r_i,H − m_stratum(i),H)`, where `m` is the mean raw forward return of **all** 15m
-  candles in the occurrence's **stratum** = (UTC calendar week) × (tercile of the trailing 96-candle range, cut-points
-  from discovery). It is the direction-signed advantage over a local, volatility-matched baseline and removes drift and
-  regime clustering.
-* **Inference:** (a) 95 % **day-clustered bootstrap** CI of `D` (10,000 resamples of UTC days, seed 20240601);
-  (b) **stratified permutation** (10,000 draws, seed 12345): raw-return rows are permuted among candles *within each
-  stratum*, jointly across horizons and setups, which preserves the dependence structure; (c) **maxT** correction over
-  all setups × horizons computed from the same draws; (d) **control regression** (HC3): `y` on the occurrence dummy,
-  `d·(trailing 24-candle net move)`, trailing 96-candle range and efficiency, over the occurrences plus 5 seeded
-  controls per occurrence from the same stratum.
+* **Raw forward return of a candle.** For every 15m candle *c* that is **eligible** (its full 24-candle forward path
+  lies inside the same period), `r_{c,H} = 100 · (close[c+H] / open[c+1] − 1)`, H ∈ {1, 3, 6, 12, 24}: the return from the
+  analytical reference price of a trigger at *c*. An occurrence's `r_{i,H}` is this value at its trigger candle.
+* **Local baseline (stratum).** The stratum of a candle = (UTC calendar week of its open time) × (tercile of the trailing
+  96-candle high-low range ending at that candle, as % of its close; cut-points = terciles over eligible discovery
+  candles, frozen, and reused unchanged for the hold-out). `m_{k,H}` = mean of `r_{c,H}` over **all** eligible candles of
+  stratum *k*. Discovery spans exactly 39 whole UTC weeks (Mon 2025-09-01 → Sun 2026-05-31).
+* **Estimand:** `D_{s,H} = mean_i d_i · (r_{i,H} − m_{k(i),H})`. It is the direction-signed advantage of the setup's
+  occurrences over a local, volatility-matched baseline; it removes drift and regime clustering.
+* **Baseline status (explicit).** The baseline `m` is computed from the **completed** discovery-period history (it uses
+  returns that occur after each occurrence, within its week) and is therefore an **ex-post analytical benchmark**. It is
+  **not** information available to the AI, **not** information available to the recognizer, **not** part of trigger
+  determination, **not** part of execution, and **not** a parameter selected using outcomes. It cannot be computed live
+  and must never be read as a tradable signal or a rule. The same applies, on its own data, to the hold-out baseline.
+* **Inference.**
+  (a) **95 % day-clustered bootstrap** CI of `D`: 10,000 resamples of occurrences by UTC day (all occurrences of a
+  sampled day move together), the baseline `m` held fixed, `numpy.random.default_rng(20240601)`.
+  (b) **Day-block permutation null (preserves serial dependence; no individual 15m row is ever permuted).** The unit is
+  one **UTC day = 96 consecutive 15m candles**, kept intact with all five horizons together. In each draw, within every
+  UTC calendar week, the **complete days** (every candle eligible) are permuted: **Monday–Friday among themselves and
+  Saturday–Sunday among themselves**; days containing any ineligible candle stay in place. The candle in slot *k* of day *q*
+  receives the return rows of slot *k* of the day assigned to *q*. Occurrence times, directions, strata and `d_i` stay
+  fixed; each draw recomputes the stratum means `m*` from the permuted rows and then `D*_{s,H}` for **every setup and
+  horizon** with the same function used for the observed `D`. **10,000 draws**, `numpy.random.default_rng(12345)`.
+  The null assumed is: *the timing of occurrences within a week and day-type carries no information about subsequent
+  returns.*
+  (c) **maxT.** For each cell, `s_cell` = standard deviation of `D*_cell` over the draws and `Z_cell = D_cell / s_cell`,
+  `Z*_{b,cell} = D*_{b,cell} / s_cell`. The two-sided adjusted p of a cell is
+  `(1 + #{b : max over all cells |Z*_{b,·}| ≥ |Z_cell|}) / (10,000 + 1)`. All setups × horizons use the **same** draws, so
+  their dependence is preserved. Hold-out: the same procedure on hold-out weeks for the single frozen cell
+  (`s_cell` from its own draws), with α = 0.05 ÷ (number of G2 PASSes).
+  (d) **Control regression** (HC3, analytic, no permutation): `y` on the occurrence dummy, `d·(trailing 24-candle net
+  move)`, trailing 96-candle range and efficiency, over the occurrences plus 5 seeded controls per occurrence drawn from
+  the same stratum (`default_rng(12345)`).
 * **MDE:** the archived `stats.mde` formula (z-based, `m_cells` = cells actually tested, power 0.80) on the
   occurrence/control samples.
-* The archived statistics code (`src/outcomes/stats.py`) is **imported unchanged** behind a new frozen wrapper; its 1H
-  freeze record stays valid.
+* **Code reuse.** Archived helpers (`src/outcomes/stats.py`: `mde`, `ols_hc3`, `welch`, `cohens_d`) are imported unchanged
+  behind a new frozen wrapper; their 1H freeze record stays valid. The day-block permutation and maxT above are **new**
+  code in `src/setups/`, because the archived permutation shuffles individual rows, which this experiment does not do.
 
 **Research effect-size floor F = 0.15 percentage points** of `D` at the frozen horizon. **F is a research effect-size
 screen. It is not assumed net trading profit and is not proof of economic viability.** Execution cost is handled only
@@ -265,7 +295,7 @@ discovery and ≥ 50 hold-out occurrences; hold-out from 2026-06-01, applied onc
 budget with cost logging; separate real-fills execution stage; UNKNOWN/ambiguous treated conservatively; paper trading as
 the final gate. Modified: the 0.15 % floor is a research effect-size screen only, not net profit. Required: presence and
 trigger are separate timestamps; the next-candle open is the *analytical reference price*, not an execution price; the
-recognizer is frozen before the outcome dataset is exposed. Dataset replaced by `data/research_binance.db`.
+recognizer is frozen before the outcome dataset is exposed. Dataset replaced by `data/research_binance.db`. Revision requested before F0: day-block permutation null (no row-level permutation); explicit ex-post status of the local baseline; mechanical, candidate-specific recall with a minimum of 10 eligible supporting charts; Experiment 3 analytical-reference-price sentence added to the policy; design doc section 12 corrected.
 
 ## 15. Disclosures and limitations
 
@@ -273,6 +303,9 @@ recognizer is frozen before the outcome dataset is exposed. Dataset replaced by 
   computed and read by us; no setup concept was involved, but the period is not virgin for the researchers. The
   hold-out (≥ 2026-06-01) has never been charted, shown to a model or measured by any experiment.
 * The model may know historical market episodes; relative axes, no dates and no symbol reduce, not remove, this.
+* The day-block null assumes days of the same type (Mon–Fri / Sat–Sun) within a UTC week are exchangeable under
+  "no information"; volatility differences among days can make it imperfect, which is why the baseline also matches on
+  volatility and why the robustness gates exist. Days with ineligible candles (period ends) are not permuted.
 * Candidates are not independent; the maxT correction handles dependence among cells, and co-occurrence is reported.
 * The hold-out is ≈ 120 days; low frequency can make G3 INCONCLUSIVE. Data after 2026-09-28 is not in this dataset;
   later data can become a second, forward hold-out and the paper-trading period.

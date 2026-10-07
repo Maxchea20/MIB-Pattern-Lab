@@ -177,22 +177,28 @@ frozen first. The data hierarchy is: recorded exchange fills > deterministic sim
 * The data in hand is OHLC. A resting-limit fill cannot be proven from OHLC, so such fills are **UNKNOWN** unless a
   conservative rule fixed in advance applies. The default model is a marketable order at the next candle's open with
   pessimistic, pre-declared spread and slippage; stops fill at the worse of the stop and the next available price.
-* Intrabar order is resolved with the **finer series (5-minute candles, if present for the whole period)**; if a candle
-  still contains both a stop and a favourable level, the event is **AMBIGUOUS**, counted adversely in the primary
+* Intrabar order is resolved with the **finer series (5-minute candles, then 1-minute candles; both complete in the
+  canonical dataset)**; if a candle still contains both a stop and a favourable level, the event is **AMBIGUOUS**, counted adversely in the primary
   result and also reported separately.
 * Every simulated trade must answer the seven audit questions in the policy, or it is invalid.
 * The only tier-1 evidence is **paper trading with real exchange fills**, which is a required gate before any integration.
 
 ## 12. Which timeframe first?
 
-**Recommendation: 15-minute signals, with 5-minute candles reserved for later execution-resolution.**
+**Approved: 15-minute primary signal and discovery series.** The canonical dataset is **`data/research_binance.db`**
+(coverage report `docs/setups/COVERAGE_RESEARCH_BINANCE_REPORT.json`; replaces the earlier database, whose numbers are not
+used).
 
-* 5M moves are small relative to realistic costs (§0), and its candle noise dominated the last experiment.
-* 1H has six years of history, but only the ~13-month window has finer candles for resolving fills, and the 1H hold-out
-  (≥ 2024-06-01) was reserved for the archived experiment: using it here would consume it.
-* 15M keeps the whole pipeline (discovery → hold-out → fill resolution) inside the same ~13-month period that has 5M
-  data. Cost: a short history (~38k candles). **Precondition:** a read-only coverage report for 15M (gaps, duplicates,
-  timestamp convention, whether 1M data exists), like `COVERAGE_REPORT.json` for 5M. Not run yet.
+* **15M** is the only series AI sees and the only series on which setups are recognised and triggers are stamped. Moves
+  are large enough relative to realistic costs to be worth studying (5M was too noisy), and the history (≈ 13 months,
+  37,728 candles, no gaps) supports discovery before 2026-06-01 and a ≈ 120-day hold-out from 2026-06-01.
+* **5M** is the **complete intrabar execution-resolution series**: every 15M candle has all 3 children and the 15M OHLC
+  equals their aggregate exactly. It is used only after G0–G3, to resolve the order of events inside a 15M candle.
+* **1M** is present in this dataset and complete for the covered range (every 15M candle has all 15 children; OHLC equals
+  the aggregate exactly). It remains **subordinate to 15M**: it never defines a signal or a trigger and is used only for
+  finer execution resolution when 5M cannot settle an order of events (otherwise the event is AMBIGUOUS).
+* The **execution-aware backtest remains a separate, later stage** with its own frozen execution specification, run only
+  after a setup passes G0–G3. 1H is not used; the archived 1H experiment and its hold-out are untouched.
 
 ## 13. How many discovery charts are needed?
 
@@ -223,8 +229,9 @@ Each frozen candidate is classified at the discovery stage by **fixed gates** (a
   bounds. Else **NOT CODEABLE**.
 * **G1 Enough occurrences:** ≥ **100** counted (non-overlapping) discovery occurrences. Else **INCONCLUSIVE / LOW FREQUENCY**.
 * **G2 Predictive information (discovery):** unit = occurrence; outcome = **direction-signed** forward return at 1, 3,
-  6, 12, 24 candles from the next-candle open, compared with a **matched baseline** (non-occurrence times in the same
-  volatility/trailing-move strata, same direction sign), with day-clustered bootstrap CIs, stratified permutation test, a
+  6, 12, 24 candles from the next-candle open, compared with a **local baseline** (all candles in the same UTC week and
+  trailing-96-candle volatility tercile; an ex-post analytical benchmark, never a signal), with day-clustered bootstrap CIs, day-block permutation test (UTC days permuted within
+  calendar weeks; exact procedure in `PREREGISTRATION_SETUPS.md` section 9), a
   control regression (as in 5M), and **maxT correction across setups × horizons**. **PASS** at a horizon requires all of:
   adjusted p < 0.05; CI of the difference excludes 0; control regression p < 0.05 with the same sign; the effect also
   holds measured from the next-open reference; and a **cost-aware floor**: mean signed return ≥ *F* (see decisions).
