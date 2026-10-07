@@ -104,3 +104,16 @@ def test_chart_has_96_candles_and_no_dates(small):
     assert len(w.raw) == 96 == params.LOOKBACK
     st = sampling.chart_style()
     assert st == {"axis_labels": "pct", "time_labels": "relative", "y_span_pct": None}
+
+
+def test_dryrun_report_is_read_only_deterministic_and_complete(small, tmp_path, monkeypatch):
+    from src.setups import dryrun_report
+    monkeypatch.chdir(tmp_path)
+    before = sorted(p.name for p in tmp_path.iterdir())
+    r = dryrun_report.report(series())
+    assert sorted(p.name for p in tmp_path.iterdir()) == before                  # nothing written
+    assert r["determinism"]["selection_identical_on_rerun"] and r["determinism"]["build_metadata_identical_on_rerun"]
+    assert set(r["eligible_pool_per_stratum_(a_window_may_qualify_for_several)"]) == set(params.STRATA)
+    assert sum(r["selected_per_stratum"].values()) == r["n_selected"] and r["all_selected_before_cutoff"]
+    assert r["min_gap_between_selected_windows_candles"] >= params.MIN_GAP_CANDLES
+    assert sum(r["candidates_by_first_matching_stratum"].values()) == r["funnel"]["candidates"]
