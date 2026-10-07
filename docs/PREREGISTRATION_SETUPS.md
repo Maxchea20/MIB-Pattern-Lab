@@ -136,7 +136,9 @@ NOT CODEABLE / NOT SELECTIVE.
 **Fidelity audit (outcome-blind, within the AI budget).**
 *Precision.* A sample of up to 100 recognizer trigger cases and 100 non-trigger cases (stratified like the Stage A
 sample) is shown to the model with the frozen definition text and asked whether the setup is present at the right edge.
-Precision = share of trigger cases judged present. Gate: **precision ≥ 70 %**.
+Precision = share of the audited recognizer trigger cases judged present. Gate: **precision ≥ 70 %**, evaluated
+**only if at least 10 recognizer trigger cases were audited**. If fewer than 10 trigger cases are available, the
+candidate is classified **insufficient evidence → NOT CODEABLE FAITHFULLY**; a tiny sample can never pass.
 *Recall (mechanical, candidate-specific).* For a candidate *K*, let **E_K** = the Stage A charts with
 `status = ACTIONABLE_NOW` whose chart id is in *K*'s `supporting_ids` (the "eligible supporting charts").
 `numerator` = the charts in E_K on which the **frozen recognizer of K** is PRESENT, or has TRIGGERED within the last 2
