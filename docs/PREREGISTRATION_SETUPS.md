@@ -97,9 +97,11 @@ answer.** Raw responses, image hash and prompt hash are stored; nothing is edite
 **Lints.** *Prompt lint (strict, whole-word, case-insensitive):* the prompts must contain none of: breakout, BOS, CHoCH, liquidity, sweep, FVG,
 fair value gap, support, resistance, order block, trend, continuation, reversal, momentum, mean reversion, pattern,
 candlestick, bullish, bearish, indicator, volume. *Output lint:* a response is rejected (error row, no retry loop) if it
-contains performance or promise language: profit, profitable, win, wins, winning, works, edge, probability, likely,
-guaranteed, target, take profit, stop loss, backtest. Technical words the model chooses itself are allowed; we never
-supply them.
+contains performance or promise language. Words (whole-word, case-insensitive): profit, profitable, win, wins, winning,
+works, probability, likely, guaranteed, target, backtest. Phrases: take profit, stop loss, trading edge, statistical edge,
+predictive edge, positive edge, an edge, has edge, have edge. The standalone word "edge" is **not** forbidden, because
+the Stage A prompt itself uses positional language such as "at the right edge". Technical words the model chooses itself
+are allowed; we never supply them.
 
 ## 6. Stage B — consolidation
 
