@@ -30,6 +30,11 @@ DESIGN_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK.json"          #
 F0B_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK_F0B.json"        # F0b: F0 + the Stage B citation amendment
 F0C_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK_F0C.json"        # F0c: F0b + the final-merge rule order
 AMENDMENT_F0C = config.ROOT / "docs" / "setups" / "AMENDMENT_F0C.md"
+F1_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_F1_LOCK.json"                  # F1: the setup definitions are frozen; no AI step after this
+CANDIDATES = config.ROOT / "docs" / "setups" / "SETUP_CANDIDATES.json"
+F1_RUN_FILES = ("windows_setups.jsonl", "sample_meta.json", "stage_a.jsonl", "chart_verification.json",
+                "stage_b_attempts.jsonl", "cost_log.jsonl")                       # whole files: after F1 nothing may be appended
+_REAL_DESIGN_LOCK = DESIGN_LOCK                                                  # the guard below applies to the real pipeline only
 AMENDMENT = config.ROOT / "docs" / "setups" / "AMENDMENT_F0B.md"
 F0B_AMENDED = ("src/setups/prompts.py", "src/setups/discover.py")             # the ONLY locked files F0b may change
 RUN_DIR = config.ROOT / "results" / "setups" / "discovery"
@@ -290,8 +295,126 @@ def verify_design_lock(lock_path: Path | None = None) -> dict:
     return verify_f0b() if F0B_LOCK.exists() else _verify_f0()
 
 
+def _canon(obj) -> str:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _h(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def f1_record(run_dir: Path | None = None, candidates_path: Path | None = None) -> dict:
+    """A malformed or tampered file is a loud, clean failure (SystemExit), never a silent pass or a stray KeyError."""
+    try:
+        return _f1_record(run_dir, candidates_path)
+    except (KeyError, TypeError, ValueError, IndexError, AttributeError) as e:
+        raise SystemExit(f"F1: a frozen file is malformed or was changed ({type(e).__name__}: {e})")
+
+
+def _f1_record(run_dir: Path | None = None, candidates_path: Path | None = None) -> dict:
+    """What F1 freezes: the setup definitions (SETUP_CANDIDATES.json), every final Stage A description, every Stage B attempt
+    (including the rejected F0 / F0b ones), the accepted final response, the cost log, and the three design locks with their
+    amendments. Refuses unless the F0c design lock verifies and the candidate file is exactly what the accepted final response
+    produced under the rules: at most MAX_CANDIDATES, each with >= MIN_SUPPORT verified supporting descriptions, structurally valid."""
+    from src.setups import prompts
+    run_dir = Path(run_dir or RUN_DIR)
+    cpath = Path(candidates_path or CANDIDATES)
+    verify_design_lock()                                              # F0 -> F0b -> F0c chain must hold
+    for need in (cpath, F0B_LOCK, F0C_LOCK, DESIGN_LOCK, AMENDMENT, AMENDMENT_F0C, *[run_dir / n for n in F1_RUN_FILES]):
+        if not Path(need).exists():
+            raise SystemExit(f"F1 needs {Path(need).name}")
+    cand = json.loads(cpath.read_text(encoding="utf-8"))
+    problems = []
+    keep = cand["candidates"]
+    if len(keep) > params.MAX_CANDIDATES or not keep:
+        problems.append(f"{len(keep)} candidates (1..{params.MAX_CANDIDATES} allowed)")
+    if len({c["name"] for c in keep}) != len(keep):
+        problems.append("candidate names are not unique")
+    for c in keep:
+        base = {k: c[k] for k in prompts.B_KEYS}
+        if prompts.validate_candidate(base):
+            problems.append(f"{c['name']}: {prompts.validate_candidate(base)}")
+        if len(set(c["supporting_ids"])) < params.MIN_SUPPORT or len(c["supporting_ids"]) != len(set(c["supporting_ids"])):
+            problems.append(f"{c['name']}: fewer than {params.MIN_SUPPORT} distinct verified supporting descriptions")
+    attempts = [json.loads(l) for l in (run_dir / "stage_b_attempts.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    finals = [r for r in attempts if r["kind"] == "final" and r.get("rule") == cand.get("rule") and r["accepted"]]
+    if len(finals) != 1:
+        problems.append("expected exactly one accepted final response under the rule recorded in the candidate file")
+    else:
+        survivors = [c for c in finals[0]["candidates"] if len(c["supporting_ids"]) >= params.MIN_SUPPORT]
+        if _canon(survivors) != _canon(keep):
+            problems.append("SETUP_CANDIDATES.json is not exactly the survivors of the accepted final response")
+        if _canon([d["name"] for d in cand["dropped"]]) != _canon([c["name"] for c in finals[0]["candidates"] if len(c["supporting_ids"]) < params.MIN_SUPPORT]):
+            problems.append("the dropped list is not exactly the candidates set aside by count")
+    a_rows = [json.loads(l) for l in (run_dir / "stage_a.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    windows = [json.loads(l) for l in (run_dir / "windows_setups.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    final_a = {}
+    for r in a_rows:
+        if r.get("error") is None:
+            final_a[r["chart_id"]] = r
+    if sorted(final_a) != sorted(w["chart_id"] for w in windows):
+        problems.append("not every chart has a clean final Stage A description")
+    if problems:
+        raise SystemExit("CANNOT FREEZE F1:\n  - " + "\n  - ".join(problems))
+    status_counts: dict[str, int] = {}
+    for r in final_a.values():
+        status_counts[r["parsed"]["status"]] = status_counts.get(r["parsed"]["status"], 0) + 1
+    desc = [f"{cid}:{_h(_canon(final_a[cid]['parsed']))}" for cid in sorted(final_a)]
+    cost_lines = [l for l in (run_dir / "cost_log.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    return {
+        "id": "F1",
+        "principle": "The setup definitions are frozen exactly as the model returned them. No AI step follows: no merging, splitting, "
+                     "renaming, trigger or lookback changes, and no removal of examples.",
+        "candidates_file": {"path": "docs/setups/SETUP_CANDIDATES.json", "sha256": file_sha256(cpath), "rule": cand["rule"],
+                            "n_candidates": len(keep), "n_dropped": len(cand["dropped"])},
+        "candidates": [{"name": c["name"], "direction": c["direction"], "verified_supporting_descriptions": len(c["supporting_ids"]),
+                        "definition_sha256": _h(_canon({k: c[k] for k in prompts.B_KEYS}))} for c in keep],
+        "dropped": [{"name": d["name"], "verified": d["verified_distinct_supporting_descriptions"]} for d in cand["dropped"]],
+        "stage_a": {"n_descriptions": len(final_a), "status_counts": dict(sorted(status_counts.items())),
+                    "final_descriptions_sha256": _h("\n".join(desc)), "rows_in_file": len(a_rows)},
+        "stage_b": {"attempt_rows": len(attempts),
+                    "rows": [{"rule": r.get("rule", "F0"), "kind": r["kind"], "index": r["index"], "attempt": r["attempt"], "accepted": r["accepted"],
+                              "raw_sha256": _h(r["raw"])} for r in attempts],
+                    "accepted_final_raw_sha256": _h(finals[0]["raw"])},
+        "cost": {"lines": len(cost_lines), "total_usd": round(sum(json.loads(l)["estimated_cost_usd"] for l in cost_lines), 6)},
+        "files_sha256": {n: file_sha256(run_dir / n) for n in F1_RUN_FILES},
+        "locks_sha256": {"f0": file_sha256(DESIGN_LOCK), "f0b": file_sha256(F0B_LOCK), "f0c": file_sha256(F0C_LOCK),
+                         "amendment_f0b": file_sha256(AMENDMENT), "amendment_f0c": file_sha256(AMENDMENT_F0C)},
+        "dataset": current_record()["dataset"],
+    }
+
+
+_F1_COMPARE = ("candidates_file", "candidates", "dropped", "stage_a", "stage_b", "cost", "files_sha256", "locks_sha256", "dataset")
+
+
+def verify_f1(f1_path: Path | None = None, run_dir: Path | None = None, candidates_path: Path | None = None) -> dict:
+    p = Path(f1_path or F1_LOCK)
+    if not p.exists():
+        raise SystemExit("docs/PREREG_SETUPS_F1_LOCK.json is missing: the setup definitions are not frozen yet.")
+    stored = json.loads(p.read_text(encoding="utf-8"))
+    now = f1_record(run_dir, candidates_path)
+    bad = [k for k in _F1_COMPARE if stored[k] != now[k]]
+    if bad:
+        raise SystemExit(f"F1 MISMATCH - the frozen setup definitions or their record changed: {bad}")
+    return stored
+
+
+def require_f1(confirm_sha12: str | None) -> dict:
+    """For every step after discovery (recognizer, fidelity, outcomes): F0 -> F0b -> F0c -> F1 must all hold."""
+    lock = verify_design_lock()
+    verify_f1()
+    sha = lock["sha256"]["preregistration_setups"]
+    if not confirm_sha12 or len(confirm_sha12) < 12 or not sha.startswith(confirm_sha12.lower()):
+        raise SystemExit(f"--confirm-design-sha missing or does not match (first 12 chars: {sha[:12]}).")
+    return lock
+
+
 def require_design_lock(confirm_sha12: str | None, lock_path: Path | None = None) -> dict:
-    """Used by every pipeline step: the design must be locked and unchanged, and the caller must name it."""
+    """Used by every discovery step: the design must be locked and unchanged, and the caller must name it.
+    Once F1 exists the discovery AI steps (Stage A, Stage B, sampling) are CLOSED for the real pipeline: they are refused here."""
+    if lock_path is None and F1_LOCK.exists() and DESIGN_LOCK == _REAL_DESIGN_LOCK:
+        raise SystemExit("F1 is written: the setup definitions are frozen and the discovery steps (sampling, Stage A, Stage B) are closed. "
+                         "Use require_f1 for later stages.")
     lock = verify_design_lock(lock_path)
     sha = lock["sha256"]["preregistration_setups"]
     if not confirm_sha12 or len(confirm_sha12) < 12 or not sha.startswith(confirm_sha12.lower()):
@@ -303,11 +426,19 @@ def require_design_lock(confirm_sha12: str | None, lock_path: Path | None = None
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--write-f1", action="store_true", help="write docs/PREREG_SETUPS_F1_LOCK.json (once): freeze the setup definitions")
     ap.add_argument("--write-f0c", action="store_true", help="write docs/PREREG_SETUPS_DESIGN_LOCK_F0C.json (once), after amendment F0c is approved")
     ap.add_argument("--write-f0b", action="store_true", help="write docs/PREREG_SETUPS_DESIGN_LOCK_F0B.json (once), after the amendment is approved")
     ap.add_argument("--db", default=str(CANONICAL_DB))
     a = ap.parse_args(argv)
     db = verify_database(a.db)                                   # the lock is only written for the exact canonical file
+    if a.write_f1:
+        if F1_LOCK.exists():
+            raise SystemExit("F1 lock already exists; it is written once.")
+        rec = {"locked_at": pd.Timestamp.now(tz="UTC").isoformat(), "git_commit": current_record()["git_commit"], "database_verified": db, **f1_record()}
+        F1_LOCK.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+        print(f"wrote {F1_LOCK}\n" + json.dumps({k: rec[k] for k in ("id", "candidates_file", "candidates", "dropped", "stage_a", "cost")}, indent=2))
+        return 0
     if a.write_f0c:
         if F0C_LOCK.exists():
             raise SystemExit("F0c lock already exists; it is written once.")
