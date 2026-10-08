@@ -1,6 +1,6 @@
-# Experiment 3 (15M setup discovery) — closing summary, DRAFT for review
+# Experiment 3 (15M setup discovery) — closing summary
 
-**Status: DRAFT.** Not yet accepted by the reviewer. Facts below are from committed files; interpretation is marked as such.
+**Status: ACCEPTED by the reviewer after three wording edits (this version).** Facts below are from committed files; interpretation is marked as such.
 
 ## Result
 
@@ -34,16 +34,24 @@ Spend: Stage A/B $1.0524, fidelity audit $0.1802; total $1.2326 of the $4.50 cei
 ## Facts worth keeping
 
 * **Raw trigger frequency was in the 0.2 %–10 % band for all seven** (0.28 %–1.83 %). Counted occurrences collapsed for C2, C3, C4, C6, C8 because one occurrence per candidate was never invalidated (locks up to 22,766 candles, ~237 days) and the frozen lockout blocks later counted triggers until invalidation. Preserved as a finding about the frozen invalidation levels.
-* **C7 precision 87 % but recall 25 %.** The model also judged 31 of 100 non-trigger candles PRESENT (context, not a gate), so "present" in the model's eyes is broad. Recognizer = faithful where it fires, too narrow relative to what the AI itself cited as actionable (recall denominator is small: 12; recognized: S0121, S0444, S0550).
+* **C7 precision 87 % but recall 25 %.** The recognizer agreed with the frozen visual definition on 87/100 sampled trigger cases (87 PRESENT, 12 NOT_PRESENT, 1 UNCLEAR), but recall was only 3/12 = 25 % against the eligible Stage A actionable charts (recognized: S0121, S0444, S0550; S0550 is the only one with a trigger; the denominator is small). The recognizer therefore appears selective relative to the AI descriptions, but this audit does not establish general semantic fidelity beyond these sampled cases. The model also judged 31 of 100 non-trigger candles PRESENT (context, not a gate), so "present" in the model's eyes is broad. There were no audit errors.
 * Overlap among recognizers was modest (largest presence Jaccard C6/C8 0.158).
 
 ## Interpretation (not a result)
 
-The numeric translation of loose chart language (several simultaneous "small"/"near" conditions at q33) is much narrower than the language, and open-ended invalidation levels make the lockout rule remove most occurrences. Both are properties of translating discovered text into frozen numbers, not evidence about the market. Nothing here says whether these setups have any directional behavior; that was never tested.
+The numeric translation of loose chart language, including several simultaneous "small"/"near" conditions mapped to q33 thresholds, produced a substantially narrower recognizer than the original natural-language descriptions. For several candidates, the frozen invalidation rule also left occurrences under lock for very long periods, so most raw triggers were suppressed before they could become counted occurrences. These are properties of the frozen translation and counting procedure, not evidence about the market. Nothing here tests whether any setup has directional behavior; that was never tested.
 
-## Disclosed post-hoc decisions
+## Disclosed amendments, post-hoc decisions, and measurement conventions
 
-F0b and F0c (after Stage B failures), J-14 (after seeing RET), the choice to count counted-trigger cases for precision, and recall counting raw triggers on T or T-1. None used any outcome.
+| Item | Kind | Note |
+|---|---|---|
+| F0b | amendment after Stage B citation failures | unknown supporting ids dropped and audited; support = verified ids |
+| F0c | amendment (rule-order clarification) after the Stage B final merge exceeded the cap | candidates with < 15 verified ids set aside by count, then the cap of 8 applies; ordering resolved after seeing the output; the cap was not raised |
+| J-14 | post-hoc interpretive decision | C6 `RET ≤ 1.0`, decided after seeing the derived RET distribution; no outcome existed |
+| Counted-trigger precision | measurement convention | the audited trigger cases are the counted (post-lockout) C7 occurrences, the population that would enter later analysis |
+| Recall | mechanical convention | a chart is recognized if C7 is present at T or a raw trigger occurred on T or T-1 |
+
+None of these used any outcome, and none was outcome-driven tuning. The frequency artifact states that no rule or threshold was changed.
 
 ## Not done / not claimed
 
