@@ -1,6 +1,8 @@
-# Recognizer parameter table — DRAFT v1 for review
+# Recognizer parameter table — DRAFT v2 (user decisions applied)
 
-**Status: DRAFT. Not frozen (no F2). No recognizer code, no historical scan, no outcome, no AI call exists for this step.**
+**Status: DRAFT. Not frozen (no F2). No recognizer code, no historical setup scan, no outcome, no AI call exists for this step.**
+
+**Review decisions applied in v2.** J-1, J-2, J-3, J-4, J-6, J-7, J-8, J-10, J-11, J-12, J-13 approved. **J-5 NOT approved: C5 stays NOT CODEABLE** (not dead forever; a missing rule is not invented to save it, and the other seven do not depend on it). **J-9 stays flagged**: `c_t < c_{t−3}` is *our* numerical translation of "bearish candles push / pressure lower"; the frozen AI description does **not** say "three candles", and no report may present it as if it did (see the *Transparency* lines in C3 and C8). The 33/67 values are still **not** frozen: the derivation output is reviewed first (section 4).
 It translates the eight setup definitions frozen in F1 (`docs/setups/SETUP_CANDIDATES.json`, file hash `2864bee7…`) into explicit
 numeric rules on completed 15-minute candles. The English is not edited, merged, split or renamed; this document only decides what
 it means mathematically, as the pre-registration (section 7) requires, and says where it **cannot** be decided objectively.
@@ -79,7 +81,7 @@ All are functions of the window at *t*, in `R` units unless stated. Percentiles 
 
 ## 4. How the numbers are derived (once, price-only, then frozen)
 
-1. A small deterministic script (written **after** you approve this text; it contains no outcome, forward-return or future-price code) computes every quantity of section 3 at every discovery position *t* (open time < 2026-06-01) that has 96 gap-free candles (26,113 positions in the canonical dataset). It reads candles ≤ *t* for position *t*. It does not look for setups, trigger anything or read any hold-out candle.
+1. A small deterministic script (`src/setups/derive_params.py`; it contains no outcome, forward-return or future-price code) computes every quantity of section 3 at every discovery position *t* (open time < 2026-06-01) that has 96 gap-free candles. The position count is reported by the run (the sampler's 26,113 also excluded positions lacking a 24-candle forward path; this script has no forward-path requirement, so its count is larger). Each position is computed from its own 96-candle window only (a function that receives nothing else). `DT_Cn` / `DF_Cn` are measured where their level exists: C1 `Res1` (needs `SH*`); C2 `RH` (needs `SL*`); C3 `ZoneLow`; C4 `LL*` (D1 holds, `LL*` exists, `c_t ≥ LL*`); C6 `PBL` (needs `SH*`); C7 `ZoneHigh`; C8 `lL` (needs `SL*`, `c_t ≥ lL`). C5 is excluded. `UP` is defined only when `hH > lB`, `DN` only when `hB > lL`. It does not look for setups, trigger anything or read any hold-out candle.
 2. Output: for each quantity (and `DT_Cn` / `DF_Cn`) the 25th, 33rd, 40th, 60th, 67th and 75th percentiles, and the number of positions defined. These tables are hashed into the F2 record. The primary run uses 33/67; the others serve the pre-declared variants.
 3. The script runs once. The hold-out never contributes to any threshold and is not refitted.
 4. The disclosed limitation (as for the sampler's terciles): the thresholds use the whole discovery period of **price** data, not an expanding window. They contain no outcome information.
@@ -134,6 +136,7 @@ Frozen idea: a sideways/choppy range at the right edge rolls over from its upper
 | Forbidden variation | a trending (high-efficiency) zone; price still in the middle/upper range; a floor break that has already happened. |
 | Numeric tolerance | `EFF ≤ q33`, `pos_E ≥ 2/3` (high) and `≤ 1/3` (close), `DF_C3 ≤ q33`. |
 | Not coded (ledger) | J-4: "local support, pullback low, range floor" are treated as one level, the range floor `ZoneLow` (named by the presence rule: "lower edge of the local range"). J-9: "bearish candles push" := `c_t < c_{t−3}`. |
+| Transparency (J-9) | `c_t < c_{t−3}` is **our translation**, a judgment choice. The frozen AI description says only that bearish candles push into the lower part; it specifies no number of candles. Reports must say so. |
 | **Verdict** | **CODEABLE** |
 
 ### C4 `bearish_continuation_below_broken_support` (down, 16)
@@ -162,12 +165,12 @@ Frozen idea: an impulsive rally to a spike high; a shallow pullback or tight con
 | Trigger | `c_{t′} > hH_{t′−1}`. |
 | Invalidation | close below the operative base: the "breakout base, pullback low or prior consolidation top". |
 | The problem | "Prior breakout zone", "breakout base" and "prior consolidation top" (condition 3, presence rule, invalidation) have **no objective referent** in the frozen text: which earlier structure the impulse "broke out" of is a subjective choice. |
-| Candidate definition (**J-5**, for your decision) | `B5` = the high of the latest confirmed swing high with index before the up-leg's starting swing low `lB` — "the prior structure top the impulse started from/cleared". E3 := `PBL > B5`; the invalidation level := `PBL` (the highest of the alternatives that E3 guarantees to be above `B5`). |
+| Proposed J-5 (**DECLINED by the reviewer**) | `B5` = the high of the latest confirmed swing high before the up-leg's start low `lB`. This was an interpretation, not something the frozen text forces, so it is **not adopted** and nothing downstream may use it. Kept here only as a record of what was proposed and refused. |
 | Invariant | an impulsive rally; a shallow/tight hold below the spike high; price held above the structure the impulse started from; a close above the spike high. |
 | Allowed variation | pullback depth or consolidation width inside the "small" band; proximity inside the "near" band. |
 | Forbidden variation | a mild rally; a pullback that breaks the base; a new high already printed. |
 | Numeric tolerance | `UP ≥ q67`, `RET ≤ q33` or `ZR ≤ q33`, `DT_C5 ≤ q33`. |
-| **Verdict** | **NOT CODEABLE AS WRITTEN.** It becomes codeable **only if you approve J-5**. Dropping E3 is *not* offered: it would remove a condition the text states and make the recognizer looser than the frozen definition (P1/P2). |
+| **Verdict** | **NOT CODEABLE** (decision recorded). "Prior breakout zone" has no objective referent. Dropping E3 is not allowed: it would make the recognizer looser than the frozen definition (P1/P2). C5 is excluded from derivation, recognition and every later gate; it can be revisited only by a new, explicit, separately recorded decision. |
 
 ### C6 `bearish_rejection_from_recent_high` (down, 18)
 Frozen idea: price reaches a recent high/upper range, fails to continue, retraces part of the prior rise; actionable on a close below the pullback low.
@@ -214,6 +217,7 @@ Frozen idea: after a rise or bounce, price rolls over from a local high / lower-
 | Allowed variation | which of the I1/I2 alternatives holds; proximity inside the "near" band. |
 | Forbidden variation | no recent swing low; price already below it; price far above it; a continuing uptrend with no roll-over. |
 | Numeric tolerance | `UP`/`REB` `> q33`, `EFF ≤ q33`, `DF_C8 ≤ q33`. |
+| Transparency (J-9) | The "pressure lower" clause `c_t < c_{t−3}` is **our translation** (J-9), not a number in the frozen description. Reports must say so. |
 | Not coded (ledger) | J-3: "0.00% or nearby reference". J-4: "support floor or recent swing low" is one level, the swing low `lL`. J-13: the OR-chain in I1/I2 makes I2 weak (`REB > q33` alone satisfies it); it is coded literally and **not** tightened (P1). |
 | **Verdict** | **CODEABLE — FLAGGED**: a literal translation of two OR-chains is permissive and will overlap C3; fidelity and the overlap diagnostics decide. |
 
@@ -225,7 +229,7 @@ Frozen idea: after a rise or bounce, price rolls over from a local high / lower-
 | C2 | bullish_rebound_breakout_after_drop | CODEABLE (J-3, J-4, J-10) |
 | C3 | bearish_breakdown_from_right_edge_range | CODEABLE |
 | C4 | bearish_continuation_below_broken_support | CODEABLE — FLAGGED (needs ≥ 2 pivots; may be rare) |
-| C5 | bullish_continuation_after_spike_and_pullback | **NOT CODEABLE AS WRITTEN**; codeable only if J-5 is approved |
+| C5 | bullish_continuation_after_spike_and_pullback | **NOT CODEABLE** (J-5 declined; excluded from all later steps) |
 | C6 | bearish_rejection_from_recent_high | CODEABLE (J-3, J-4, J-10) |
 | C7 | bullish_breakout_from_right_edge_range | CODEABLE (J-3, J-10) |
 | C8 | bearish_breakdown_from_right_edge_support | CODEABLE — FLAGGED (permissive OR-chain) |
@@ -246,11 +250,11 @@ Each is made on structural grounds only. Any you reject must be replaced by an a
 | J-2 | An unqualified leg/rebound/retracement means "not small" (`> q33`) | any positive size | C1, C6, C7, C8 |
 | J-3 | "zero line", "0.00%", "flat" are chart-axis artifacts and are not coded | code them as "price at the decision close" (always true) — this would add nothing | C2, C6, C7, C8 |
 | J-4 | The operative level is the one named by the presence rule; synonyms are one level; objectively undefined alternatives (support shelf, base low, consolidation top) are not coded | "earliest-reached of all alternatives" (min/max rule) | all |
-| J-5 | `B5` = high of the latest confirmed swing high before the up-leg's start low | declare C5 NOT CODEABLE | C5 |
+| J-5 | **DECLINED.** (Proposed: `B5` = high of the latest confirmed swing high before the up-leg's start low.) C5 is NOT CODEABLE | — | C5 |
 | J-6 | `K = 3` candles for swing confirmation (variants 2 and 5) | other K | C1–C8 |
 | J-7 | "Right edge" = last 24 candles; "recent" = last 48; the 24/72 split mirrors the sampler | other windows | C1–C8 |
 | J-8 | "Upper/lower part of the range" = top/bottom third | other fractions | C3 |
-| J-9 | "Bearish candles push / pressure lower" := `c_t < c_{t−3}` | any candle-colour count | C3, C8 |
+| J-9 | **Flagged, approved with transparency.** "Bearish candles push / pressure lower" := `c_t < c_{t−3}`. Our numerical translation; the AI text specifies no candle count | any candle-colour count | C3, C8 |
 | J-10 | Texture words with no stated rule are not coded: "small base/bounce", "hesitation candles", "rejection" beyond the retracement | add a rule (this would be new logic) | C2, C6, C7 |
 | J-11 | The trigger is the very next candle that closes beyond the level while presence held on the previous candle | wait several candles | C1–C8 |
 | J-12 | Distances use the 96-candle range at the decision candle | another normaliser | C1–C8 |
