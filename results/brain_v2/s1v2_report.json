@@ -1,0 +1,922 @@
+{
+  "compare": {
+    "s2_s9_identical": true,
+    "per_setup": {
+      "S1": {
+        "v1": 305,
+        "v2": 1205,
+        "identical": false
+      },
+      "S2": {
+        "v1": 636,
+        "v2": 636,
+        "identical": true
+      },
+      "S3": {
+        "v1": 191,
+        "v2": 191,
+        "identical": true
+      },
+      "S4": {
+        "v1": 101,
+        "v2": 101,
+        "identical": true
+      },
+      "S5": {
+        "v1": 55,
+        "v2": 55,
+        "identical": true
+      },
+      "S6": {
+        "v1": 284,
+        "v2": 284,
+        "identical": true
+      },
+      "S7": {
+        "v1": 703,
+        "v2": 703,
+        "identical": true
+      },
+      "S8": {
+        "v1": 668,
+        "v2": 668,
+        "identical": true
+      },
+      "S9": {
+        "v1": 574,
+        "v2": 574,
+        "identical": true
+      }
+    },
+    "s1": {
+      "v1_fires": 305,
+      "v2_fires": 1205,
+      "same_candle": 144,
+      "v1_only": 161,
+      "v2_only": 1061,
+      "jaccard": 0.1054172767203514,
+      "v1_by_period": {
+        "IN_SAMPLE": 213,
+        "UNSEEN": 92
+      },
+      "v2_by_period": {
+        "IN_SAMPLE": 833,
+        "UNSEEN": 372
+      }
+    }
+  },
+  "cited12": [
+    {
+      "chart_id": "S0013",
+      "end_ts": "2025-11-23T01:30:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": true,
+          "fired": true,
+          "first_failure": null
+        },
+        {
+          "k": 1,
+          "present": true,
+          "fired": true,
+          "first_failure": null
+        },
+        {
+          "k": 2,
+          "present": true,
+          "fired": false,
+          "first_failure": null
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 6,
+          "present": true,
+          "fired": false,
+          "first_failure": null
+        }
+      ],
+      "fired_any_T_to_T_minus_6": true,
+      "present_any": true
+    },
+    {
+      "chart_id": "S0036",
+      "end_ts": "2026-05-26T14:00:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": false
+    },
+    {
+      "chart_id": "S0120",
+      "end_ts": "2026-05-01T05:30:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": false
+    },
+    {
+      "chart_id": "S0159",
+      "end_ts": "2025-12-31T01:30:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": true,
+          "fired": true,
+          "first_failure": null
+        },
+        {
+          "k": 1,
+          "present": true,
+          "fired": false,
+          "first_failure": null
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": true,
+      "present_any": true
+    },
+    {
+      "chart_id": "S0163",
+      "end_ts": "2026-01-09T15:30:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": false
+    },
+    {
+      "chart_id": "S0176",
+      "end_ts": "2025-11-02T23:00:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": false
+    },
+    {
+      "chart_id": "S0181",
+      "end_ts": "2025-09-28T15:30:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A1 recent swing high and net up-leg > q33(UPnet)"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": false
+    },
+    {
+      "chart_id": "S0201",
+      "end_ts": "2026-04-29T10:15:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": true,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": true,
+          "fired": false,
+          "first_failure": null
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": true,
+      "present_any": true
+    },
+    {
+      "chart_id": "S0347",
+      "end_ts": "2025-10-23T04:30:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": true,
+          "fired": true,
+          "first_failure": null
+        },
+        {
+          "k": 1,
+          "present": true,
+          "fired": false,
+          "first_failure": null
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A3 close near the pause high DT <= q33"
+        },
+        {
+          "k": 5,
+          "present": true,
+          "fired": true,
+          "first_failure": null
+        },
+        {
+          "k": 6,
+          "present": true,
+          "fired": true,
+          "first_failure": null
+        }
+      ],
+      "fired_any_T_to_T_minus_6": true,
+      "present_any": true
+    },
+    {
+      "chart_id": "S0472",
+      "end_ts": "2026-02-13T15:15:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 4,
+          "present": true,
+          "fired": false,
+          "first_failure": null
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": true
+    },
+    {
+      "chart_id": "S0500",
+      "end_ts": "2026-05-04T03:15:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": false
+    },
+    {
+      "chart_id": "S0535",
+      "end_ts": "2026-05-10T16:30:00+00:00",
+      "steps": [
+        {
+          "k": 0,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 1,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 2,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 3,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 4,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 5,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        },
+        {
+          "k": 6,
+          "present": false,
+          "fired": false,
+          "first_failure": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33"
+        }
+      ],
+      "fired_any_T_to_T_minus_6": false,
+      "present_any": false
+    }
+  ],
+  "examples": [
+    {
+      "n": 1,
+      "chart": "S1v2_unseen_01.png",
+      "fire_id": "S1-26552-up",
+      "trigger_ts": "2026-06-04T14:15:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 1 completed candle(s) up to the previous candle; the trigger candle closed at 64331.60, above the operative level 64223.10, so the brain fired UP on that close. Invalidation rules at the fire: close lt 62150.80, close le 64223.10.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 65 (recent from 48), UPnet 0.5569 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.3681 vs q33 0.3754; RET 2.6693 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0036 vs q33 0.0705 (pause high 64223.10, close 64202.70)"
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "chart": "S1v2_unseen_02.png",
+      "fire_id": "S1-27460-up",
+      "trigger_ts": "2026-06-14T01:15:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 4 completed candle(s) up to the previous candle; the trigger candle closed at 64596.40, above the operative level 64548.60, so the brain fired UP on that close. Invalidation rules at the fire: close lt 64338.80, close le 64548.60.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 89 (recent from 48), UPnet 0.8795 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.4549 vs q33 0.3754; RET 0.6098 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0213 vs q33 0.0705 (pause high 64548.60, close 64519.30)"
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "chart": "S1v2_unseen_03.png",
+      "fire_id": "S1-28760-up",
+      "trigger_ts": "2026-06-27T14:15:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 7 completed candle(s) up to the previous candle; the trigger candle closed at 60645.70, above the operative level 60643.10, so the brain fired UP on that close. Invalidation rules at the fire: close lt 60162.00, close le 60643.10.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 81 (recent from 48), UPnet 0.8625 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.3746 vs q33 0.3754; RET 1.4818 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0689 vs q33 0.0705 (pause high 60643.10, close 60554.60)"
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "chart": "S1v2_unseen_04.png",
+      "fire_id": "S1-30130-up",
+      "trigger_ts": "2026-07-11T20:45:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 1 completed candle(s) up to the previous candle; the trigger candle closed at 64388.70, above the operative level 64368.60, so the brain fired UP on that close. Invalidation rules at the fire: close lt 64205.70, close le 64368.60.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 84 (recent from 48), UPnet 0.8532 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 1.0000 vs q33 0.3754; RET 0.2406 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0482 vs q33 0.0705 (pause high 64368.60, close 64328.70)"
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "chart": "S1v2_unseen_05.png",
+      "fire_id": "S1-31446-up",
+      "trigger_ts": "2026-07-25T13:45:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 2 completed candle(s) up to the previous candle; the trigger candle closed at 64167.00, above the operative level 64108.50, so the brain fired UP on that close. Invalidation rules at the fire: close lt 64006.20, close le 64108.50.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 88 (recent from 48), UPnet 0.5490 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.4631 vs q33 0.3754; RET 0.2274 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0125 vs q33 0.0705 (pause high 64108.50, close 64099.10)"
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "chart": "S1v2_unseen_06.png",
+      "fire_id": "S1-32564-up",
+      "trigger_ts": "2026-08-06T05:15:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 4 completed candle(s) up to the previous candle; the trigger candle closed at 64885.20, above the operative level 64702.90, so the brain fired UP on that close. Invalidation rules at the fire: close lt 64386.30, close le 64702.90.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 83 (recent from 48), UPnet 0.6706 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.2850 vs q33 0.3754; RET 2.4614 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0060 vs q33 0.0705 (pause high 64702.90, close 64695.90)"
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "chart": "S1v2_unseen_07.png",
+      "fire_id": "S1-33692-up",
+      "trigger_ts": "2026-08-17T23:15:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 2 completed candle(s) up to the previous candle; the trigger candle closed at 64334.90, above the operative level 64322.30, so the brain fired UP on that close. Invalidation rules at the fire: close lt 64247.80, close le 64322.30.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 92 (recent from 48), UPnet 0.8877 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.3498 vs q33 0.3754; RET 0.8960 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0291 vs q33 0.0705 (pause high 64322.30, close 64267.70)"
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "chart": "S1v2_unseen_08.png",
+      "fire_id": "S1-34557-up",
+      "trigger_ts": "2026-08-26T23:30:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 1 completed candle(s) up to the previous candle; the trigger candle closed at 78821.90, above the operative level 78784.30, so the brain fired UP on that close. Invalidation rules at the fire: close lt 78513.70, close le 78784.30.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 92 (recent from 48), UPnet 0.8406 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.5273 vs q33 0.3754; RET 0.5470 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0701 vs q33 0.0705 (pause high 78784.30, close 78672.10)"
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "chart": "S1v2_unseen_09.png",
+      "fire_id": "S1-36277-up",
+      "trigger_ts": "2026-09-13T21:30:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 6 completed candle(s) up to the previous candle; the trigger candle closed at 77378.70, above the operative level 77341.60, so the brain fired UP on that close. Invalidation rules at the fire: close lt 77186.30, close le 77341.60.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 87 (recent from 48), UPnet 0.9941 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.4375 vs q33 0.3754; RET 0.4874 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0157 vs q33 0.0705 (pause high 77341.60, close 77327.00)"
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "chart": "S1v2_unseen_10.png",
+      "fire_id": "S1-37584-up",
+      "trigger_ts": "2026-09-27T12:15:00+00:00",
+      "also_a_v1_fire": false,
+      "condition": "S1 (bullish_breakout_from_right_edge_consolidation) was PRESENT for 4 completed candle(s) up to the previous candle; the trigger candle closed at 84963.10, above the operative level 84908.60, so the brain fired UP on that close. Invalidation rules at the fire: close lt 84750.10, close le 84908.60.",
+      "previous_candle_conditions": [
+        {
+          "condition": "A1 recent swing high and net up-leg > q33(UPnet)",
+          "ok": true,
+          "detail": "swing high idx 89 (recent from 48), UPnet 1.0000 vs q33 0.4635"
+        },
+        {
+          "condition": "A2 compact edge ZR <= q33 OR shallow pullback RET <= q33",
+          "ok": true,
+          "detail": "ZR 0.4998 vs q33 0.3754; RET 0.6328 vs q33 0.6908"
+        },
+        {
+          "condition": "A3 close near the pause high DT <= q33",
+          "ok": true,
+          "detail": "DT 0.0388 vs q33 0.0705 (pause high 84908.60, close 84857.50)"
+        }
+      ]
+    }
+  ]
+}
