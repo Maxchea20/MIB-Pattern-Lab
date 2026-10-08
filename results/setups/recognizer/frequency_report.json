@@ -1,0 +1,550 @@
+{
+  "candidates": {
+    "C1": {
+      "counted_triggers": 78,
+      "direction": "up",
+      "frequency_counted": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.0029870179604028647,
+        "triggers": 78
+      },
+      "frequency_raw": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.008156856738023207,
+        "triggers": 213
+      },
+      "g1_counted_ge_100": false,
+      "lockout": {
+        "candles_under_lock_total": 10794,
+        "lock_length_candles": {
+          "max": 3985.0,
+          "mean": 138.3846153846154,
+          "median": 24.0,
+          "min": 24.0,
+          "n": 78,
+          "p90": 166.69999999999993
+        },
+        "locks_longer_than_480_candles": 4,
+        "occurrences_never_invalidated_by_end_of_data": 0,
+        "share_of_evaluated_under_lock_upper_bound": 0.4133573315972887,
+        "suppressed_per_counted": 1.7307692307692308
+      },
+      "name": "bullish_breakout_from_right_edge_consolidation",
+      "presence_candles": 1461,
+      "presence_runs": {
+        "max": 22.0,
+        "mean": 3.2039473684210527,
+        "median": 2.0,
+        "min": 1.0,
+        "n": 456,
+        "p90": 7.0
+      },
+      "presence_share_of_evaluated": 0.05594914410446904,
+      "raw_triggers": 213,
+      "suppressed_triggers": 135,
+      "trigger_presence_run_length": {
+        "max": 22.0,
+        "mean": 3.9624413145539905,
+        "median": 3.0,
+        "min": 1.0,
+        "n": 213,
+        "p90": 8.0
+      }
+    },
+    "C2": {
+      "counted_triggers": 17,
+      "direction": "up",
+      "frequency_counted": {
+        "candles": 26113,
+        "classification": "NOT CODEABLE / NOT SELECTIVE",
+        "passed": false,
+        "share": 0.0006510167349595986,
+        "triggers": 17
+      },
+      "frequency_raw": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.017271091027457587,
+        "triggers": 451
+      },
+      "g1_counted_ge_100": false,
+      "lockout": {
+        "candles_under_lock_total": 24720,
+        "lock_length_candles": {
+          "max": 11032.0,
+          "mean": 1454.1176470588234,
+          "median": 129.0,
+          "min": 24.0,
+          "n": 17,
+          "p90": 5203.6
+        },
+        "locks_longer_than_480_candles": 5,
+        "occurrences_never_invalidated_by_end_of_data": 1,
+        "share_of_evaluated_under_lock_upper_bound": 0.9466549228353693,
+        "suppressed_per_counted": 25.529411764705884
+      },
+      "name": "bullish_rebound_breakout_after_drop",
+      "presence_candles": 1838,
+      "presence_runs": {
+        "max": 12.0,
+        "mean": 1.982740021574973,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 927,
+        "p90": 4.0
+      },
+      "presence_share_of_evaluated": 0.07038639757974954,
+      "raw_triggers": 451,
+      "suppressed_triggers": 434,
+      "trigger_presence_run_length": {
+        "max": 12.0,
+        "mean": 2.0376940133037693,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 451,
+        "p90": 4.0
+      }
+    },
+    "C3": {
+      "counted_triggers": 14,
+      "direction": "down",
+      "frequency_counted": {
+        "candles": 26113,
+        "classification": "NOT CODEABLE / NOT SELECTIVE",
+        "passed": false,
+        "share": 0.0005361314287902578,
+        "triggers": 14
+      },
+      "frequency_raw": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.0049400681652816605,
+        "triggers": 129
+      },
+      "g1_counted_ge_100": false,
+      "lockout": {
+        "candles_under_lock_total": 24104,
+        "lock_length_candles": {
+          "max": 22404.0,
+          "mean": 1721.7142857142858,
+          "median": 42.0,
+          "min": 24.0,
+          "n": 14,
+          "p90": 755.6000000000009
+        },
+        "locks_longer_than_480_candles": 2,
+        "occurrences_never_invalidated_by_end_of_data": 1,
+        "share_of_evaluated_under_lock_upper_bound": 0.9230651399685981,
+        "suppressed_per_counted": 8.214285714285714
+      },
+      "name": "bearish_breakdown_from_right_edge_range",
+      "presence_candles": 958,
+      "presence_runs": {
+        "max": 6.0,
+        "mean": 1.6046901172529313,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 597,
+        "p90": 3.0
+      },
+      "presence_share_of_evaluated": 0.03668670777007621,
+      "raw_triggers": 129,
+      "suppressed_triggers": 115,
+      "trigger_presence_run_length": {
+        "max": 6.0,
+        "mean": 1.5968992248062015,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 129,
+        "p90": 3.0
+      }
+    },
+    "C4": {
+      "counted_triggers": 13,
+      "direction": "down",
+      "frequency_counted": {
+        "candles": 26113,
+        "classification": "NOT CODEABLE / NOT SELECTIVE",
+        "passed": false,
+        "share": 0.0004978363267338108,
+        "triggers": 13
+      },
+      "frequency_raw": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.0028338375521770767,
+        "triggers": 74
+      },
+      "g1_counted_ge_100": false,
+      "lockout": {
+        "candles_under_lock_total": 22063,
+        "lock_length_candles": {
+          "max": 20583.0,
+          "mean": 1697.1538461538462,
+          "median": 24.0,
+          "min": 24.0,
+          "n": 13,
+          "p90": 947.0000000000008
+        },
+        "locks_longer_than_480_candles": 2,
+        "occurrences_never_invalidated_by_end_of_data": 1,
+        "share_of_evaluated_under_lock_upper_bound": 0.8449048366713897,
+        "suppressed_per_counted": 4.6923076923076925
+      },
+      "name": "bearish_continuation_below_broken_support",
+      "presence_candles": 506,
+      "presence_runs": {
+        "max": 19.0,
+        "mean": 2.568527918781726,
+        "median": 2.0,
+        "min": 1.0,
+        "n": 197,
+        "p90": 5.0
+      },
+      "presence_share_of_evaluated": 0.019377321640562172,
+      "raw_triggers": 74,
+      "suppressed_triggers": 61,
+      "trigger_presence_run_length": {
+        "max": 13.0,
+        "mean": 2.5,
+        "median": 2.0,
+        "min": 1.0,
+        "n": 74,
+        "p90": 5.0
+      }
+    },
+    "C6": {
+      "counted_triggers": 11,
+      "direction": "down",
+      "frequency_counted": {
+        "candles": 26113,
+        "classification": "NOT CODEABLE / NOT SELECTIVE",
+        "passed": false,
+        "share": 0.0004212461226209168,
+        "triggers": 11
+      },
+      "frequency_raw": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.007008003676329797,
+        "triggers": 183
+      },
+      "g1_counted_ge_100": false,
+      "lockout": {
+        "candles_under_lock_total": 25043,
+        "lock_length_candles": {
+          "max": 22766.0,
+          "mean": 2276.6363636363635,
+          "median": 67.0,
+          "min": 24.0,
+          "n": 11,
+          "p90": 1262.0
+        },
+        "locks_longer_than_480_candles": 2,
+        "occurrences_never_invalidated_by_end_of_data": 1,
+        "share_of_evaluated_under_lock_upper_bound": 0.9590242407996017,
+        "suppressed_per_counted": 15.636363636363637
+      },
+      "name": "bearish_rejection_from_recent_high",
+      "presence_candles": 687,
+      "presence_runs": {
+        "max": 11.0,
+        "mean": 1.8719346049046321,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 367,
+        "p90": 4.0
+      },
+      "presence_share_of_evaluated": 0.026308735112779074,
+      "raw_triggers": 183,
+      "suppressed_triggers": 172,
+      "trigger_presence_run_length": {
+        "max": 11.0,
+        "mean": 2.1038251366120218,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 183,
+        "p90": 4.0
+      }
+    },
+    "C7": {
+      "counted_triggers": 135,
+      "direction": "up",
+      "frequency_counted": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.005169838777620343,
+        "triggers": 135
+      },
+      "frequency_raw": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.018305058782981658,
+        "triggers": 478
+      },
+      "g1_counted_ge_100": true,
+      "lockout": {
+        "candles_under_lock_total": 12919,
+        "lock_length_candles": {
+          "max": 4296.0,
+          "mean": 95.6962962962963,
+          "median": 24.0,
+          "min": 24.0,
+          "n": 135,
+          "p90": 83.60000000000001
+        },
+        "locks_longer_than_480_candles": 4,
+        "occurrences_never_invalidated_by_end_of_data": 0,
+        "share_of_evaluated_under_lock_upper_bound": 0.49473442346723856,
+        "suppressed_per_counted": 2.5407407407407407
+      },
+      "name": "bullish_breakout_from_right_edge_range",
+      "presence_candles": 3755,
+      "presence_runs": {
+        "max": 19.0,
+        "mean": 3.3767985611510793,
+        "median": 2.0,
+        "min": 1.0,
+        "n": 1112,
+        "p90": 8.0
+      },
+      "presence_share_of_evaluated": 0.1437981082219584,
+      "raw_triggers": 478,
+      "suppressed_triggers": 343,
+      "trigger_presence_run_length": {
+        "max": 16.0,
+        "mean": 3.6861924686192467,
+        "median": 3.0,
+        "min": 1.0,
+        "n": 478,
+        "p90": 8.0
+      }
+    },
+    "C8": {
+      "counted_triggers": 29,
+      "direction": "down",
+      "frequency_counted": {
+        "candles": 26113,
+        "classification": "NOT CODEABLE / NOT SELECTIVE",
+        "passed": false,
+        "share": 0.0011105579596369624,
+        "triggers": 29
+      },
+      "frequency_raw": {
+        "candles": 26113,
+        "classification": null,
+        "passed": true,
+        "share": 0.017654042048022057,
+        "triggers": 461
+      },
+      "g1_counted_ge_100": false,
+      "lockout": {
+        "candles_under_lock_total": 24474,
+        "lock_length_candles": {
+          "max": 22406.0,
+          "mean": 843.9310344827586,
+          "median": 24.0,
+          "min": 24.0,
+          "n": 29,
+          "p90": 80.39999999999984
+        },
+        "locks_longer_than_480_candles": 2,
+        "occurrences_never_invalidated_by_end_of_data": 1,
+        "share_of_evaluated_under_lock_upper_bound": 0.9372343277294835,
+        "suppressed_per_counted": 14.89655172413793
+      },
+      "name": "bearish_breakdown_from_right_edge_support",
+      "presence_candles": 2384,
+      "presence_runs": {
+        "max": 8.0,
+        "mean": 1.7114142139267767,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 1393,
+        "p90": 3.0
+      },
+      "presence_share_of_evaluated": 0.0912955233025696,
+      "raw_triggers": 461,
+      "suppressed_triggers": 432,
+      "trigger_presence_run_length": {
+        "max": 7.0,
+        "mean": 1.8329718004338396,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 461,
+        "p90": 4.0
+      }
+    }
+  },
+  "database": {
+    "bytes": 71098368,
+    "file": "research_binance.db",
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f"
+  },
+  "derived_parameters_sha256": "6bb57d6443e97b7eb046da4fda9e8c268d4d788c264f3af537f9054739c7e7f1",
+  "discovery_end": "2026-06-01T00:00:00Z",
+  "n_candles": 26208,
+  "n_evaluated_candles": 26113,
+  "note": "Price-only. No return, outcome, MFE, MAE or R. No parameter or rule was changed. Both the raw-trigger and the counted-trigger share are shown against the band; the preregistration says 'triggers on' without naming which.",
+  "pairs": {
+    "C1/C2": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 51,
+      "presence_jaccard": 0.015701970443349755,
+      "raw_trigger_jaccard": 0.0045385779122541605,
+      "raw_trigger_same_candle": 3
+    },
+    "C1/C3": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 0,
+      "presence_jaccard": 0.0,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C1/C4": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 13,
+      "presence_jaccard": 0.006653019447287615,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C1/C6": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 5,
+      "presence_jaccard": 0.0023331777881474567,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C1/C7": {
+      "counted_trigger_same_candle": 13,
+      "presence_both": 545,
+      "presence_jaccard": 0.11667737101263113,
+      "raw_trigger_jaccard": 0.08647798742138364,
+      "raw_trigger_same_candle": 55
+    },
+    "C1/C8": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 61,
+      "presence_jaccard": 0.016120507399577166,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C2/C3": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 0,
+      "presence_jaccard": 0.0,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C2/C4": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 0,
+      "presence_jaccard": 0.0,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C2/C6": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 0,
+      "presence_jaccard": 0.0,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C2/C7": {
+      "counted_trigger_same_candle": 2,
+      "presence_both": 584,
+      "presence_jaccard": 0.11659013775204631,
+      "raw_trigger_jaccard": 0.14549938347718866,
+      "raw_trigger_same_candle": 118
+    },
+    "C2/C8": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 0,
+      "presence_jaccard": 0.0,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C3/C4": {
+      "counted_trigger_same_candle": 1,
+      "presence_both": 39,
+      "presence_jaccard": 0.02736842105263158,
+      "raw_trigger_jaccard": 0.025252525252525252,
+      "raw_trigger_same_candle": 5
+    },
+    "C3/C6": {
+      "counted_trigger_same_candle": 1,
+      "presence_both": 126,
+      "presence_jaccard": 0.08294930875576037,
+      "raw_trigger_jaccard": 0.07216494845360824,
+      "raw_trigger_same_candle": 21
+    },
+    "C3/C7": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 2,
+      "presence_jaccard": 0.0004245383145828911,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C3/C8": {
+      "counted_trigger_same_candle": 2,
+      "presence_both": 311,
+      "presence_jaccard": 0.10260640052787859,
+      "raw_trigger_jaccard": 0.07468123861566485,
+      "raw_trigger_same_candle": 41
+    },
+    "C4/C6": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 14,
+      "presence_jaccard": 0.011874469889737066,
+      "raw_trigger_jaccard": 0.015810276679841896,
+      "raw_trigger_same_candle": 4
+    },
+    "C4/C7": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 8,
+      "presence_jaccard": 0.0018810251587114979,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C4/C8": {
+      "counted_trigger_same_candle": 2,
+      "presence_both": 138,
+      "presence_jaccard": 0.0501453488372093,
+      "raw_trigger_jaccard": 0.0636182902584493,
+      "raw_trigger_same_candle": 32
+    },
+    "C6/C7": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 5,
+      "presence_jaccard": 0.001126887536623845,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    },
+    "C6/C8": {
+      "counted_trigger_same_candle": 3,
+      "presence_both": 420,
+      "presence_jaccard": 0.15843078083741985,
+      "raw_trigger_jaccard": 0.12195121951219512,
+      "raw_trigger_same_candle": 70
+    },
+    "C7/C8": {
+      "counted_trigger_same_candle": 0,
+      "presence_both": 17,
+      "presence_jaccard": 0.00277687030382228,
+      "raw_trigger_jaccard": 0.0,
+      "raw_trigger_same_candle": 0
+    }
+  },
+  "recognizer_sha256": "8b62623b9385cabb5c2a20db3131ee739da3b9eaee2e00cdd854b90af7d8e6f8",
+  "script_sha256": "ffa0bf85015011a2949afeaa2505b0565ef0f11ded90fbbbc8231c85c07ebb28"
+}
