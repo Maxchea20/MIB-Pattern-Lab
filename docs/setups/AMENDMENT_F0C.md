@@ -1,6 +1,6 @@
 # Amendment F0c — order of the two Stage B validation rules (final merge)
 
-**Status: DRAFT FOR REVIEW. Not applied, not locked.** Amends `docs/PREREGISTRATION_SETUPS.md` section 6 as already amended by
+**Status: APPROVED by the project owner on 2026-10-08 (Option 1 / F0c) and applied. Locked by `docs/PREREG_SETUPS_DESIGN_LOCK_F0C.json`, which is written after this text is committed.** Amends `docs/PREREGISTRATION_SETUPS.md` section 6 as already amended by
 `docs/setups/AMENDMENT_F0B.md`, and nothing else. No threshold changes: **8** candidates, **15** verified supporting
 descriptions, chunk size **120**, all caps, seeds, templates, the dataset and the Stage A record stay exactly as locked.
 

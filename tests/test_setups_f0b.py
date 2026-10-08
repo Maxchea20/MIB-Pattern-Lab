@@ -67,7 +67,7 @@ def test_stage_b_counts_only_verified_support_and_keeps_the_audit(tmp_path):
     (dropped,) = rec["dropped"]
     assert dropped["name"] == "lost_b" and dropped["verified_distinct_supporting_descriptions"] == 14 and dropped["cited_distinct"] == 16
     assert dropped["unverified_supporting_ids"] == ["S9101", "S9102"]
-    assert rec["rule"] == dv.RULE and rec["earlier_rejected_attempts_under_F0"] == 0
+    assert rec["rule"] == dv.RULE and rec["earlier_rejected_attempts"] == {"F0 (no rule field)": 0, "F0b": 0}
     # the audit of the chunk call is in the candidate file AND in the attempt record
     assert any(a["unverified_supporting_ids"] == ["S9001", "S9002"] for a in rec["chunk_citation_audit"][0])
     attempts = store.load_jsonl(d / dv.STAGE_B_FILE)
@@ -98,7 +98,7 @@ def test_attempts_made_under_the_f0_rule_do_not_count_and_stay_in_the_file(tmp_p
     (d / dv.STAGE_B_FILE).write_text("\n".join(json.dumps(r) for r in old) + "\n")
     t = FakeText(lambda u, n: {"candidates": [cand("x_setup", ids(6, 30))]})
     rec = dv.run_stage_b(d, t, candidates_path=tmp_path / "c.json")
-    assert t.calls == 2 and rec["earlier_rejected_attempts_under_F0"] == 3 and len(rec["candidates"]) == 1
+    assert t.calls == 2 and rec["earlier_rejected_attempts"]["F0 (no rule field)"] == 3 and len(rec["candidates"]) == 1
     lines = store.load_jsonl(d / dv.STAGE_B_FILE)
     assert lines[:3] == old and all(r.get("rule") == dv.RULE for r in lines[3:])         # history preserved, appended after
 
@@ -196,6 +196,7 @@ def test_f0b_lock_is_written_once_and_governs_afterwards(f0b_env, monkeypatch):
     f0p, run, f0b = f0b_env
     write_f0b(f0p, run, f0b)
     monkeypatch.setattr(lock, "F0B_LOCK", f0b)
+    monkeypatch.setattr(lock, "F0C_LOCK", f0b.parent / "no_f0c_lock_here.json")
     monkeypatch.setattr(lock, "RUN_DIR", run)
     monkeypatch.setattr(lock, "DESIGN_LOCK", f0p)
     assert lock.verify_design_lock()["f0b"]["amendment"]["id"] == "F0b"               # F0b is what verify_design_lock() checks now

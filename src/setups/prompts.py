@@ -231,15 +231,21 @@ def verify_citations(candidates: list[dict], allowed_ids: set[str]) -> list[dict
     return out
 
 
-def validate_stage_b(obj, allowed_ids: set[str]) -> tuple[list[dict] | None, list[str]]:
-    """-> (candidates with VERIFIED support + citation audit, problems). At most MAX_CANDIDATES; unique names; every
-    candidate structurally valid; every candidate keeps at least one verified supporting id. An unknown id never rejects an
-    answer by itself."""
+def validate_stage_b(obj, allowed_ids: set[str], min_support: int | None = None) -> tuple[list[dict] | None, list[str]]:
+    """-> (candidates with VERIFIED support + citation audit, problems).
+    Order of the rules (amendment F0c): (1) structure, unique names, lint; (2) citations are verified; every candidate keeps at
+    least one verified id; (3) the cap of MAX_CANDIDATES applies to
+      * the candidates returned, when min_support is None (chunk calls);
+      * the SURVIVORS of the support rule, when min_support is given (final consolidation): candidates with fewer than
+        min_support distinct verified supporting ids are set aside by count alone (run_stage_b lists them as dropped), and the
+        answer is rejected only if more than MAX_CANDIDATES survive.
+    Which candidates survive depends on the verified-support COUNT alone, never on content, order or name. The returned list
+    contains every verified candidate (survivors and set-aside ones) in the order given."""
     if not isinstance(obj, dict) or not isinstance(obj.get("candidates"), list):
         return None, ["response must be an object with a 'candidates' list"]
     cands = obj["candidates"]
     p = []
-    if len(cands) > params.MAX_CANDIDATES:
+    if min_support is None and len(cands) > params.MAX_CANDIDATES:
         p.append(f"at most {params.MAX_CANDIDATES} candidates are allowed; got {len(cands)}")
     for i, c in enumerate(cands):
         p += [f"candidate {i + 1}: {x}" for x in validate_candidate(c)]
@@ -252,6 +258,11 @@ def validate_stage_b(obj, allowed_ids: set[str]) -> tuple[list[dict] | None, lis
     for i, c in enumerate(verified):
         if not c["supporting_ids"]:
             p.append(f"candidate {i + 1}: none of its supporting_ids is among the input descriptions")
+    if not p and min_support is not None:
+        survivors = [c for c in verified if len(c["supporting_ids"]) >= min_support]
+        if len(survivors) > params.MAX_CANDIDATES:
+            p.append(f"after setting aside candidates with fewer than {min_support} distinct verified supporting descriptions, "
+                     f"{len(survivors)} remain; at most {params.MAX_CANDIDATES} are allowed")
     return (None if p else verified), p
 
 

@@ -25,7 +25,8 @@ from src.setups import costlog, params, prompts, store
 STAGE_A_FILE = "stage_a.jsonl"
 STAGE_B_FILE = "stage_b_attempts.jsonl"
 COST_FILE = "cost_log.jsonl"
-RULE = "F0b_verified_citations"       # amendment F0b: unknown supporting ids are dropped and audited, never a reason to reject
+RULE = "F0c_prune_before_cap"        # amendment F0c: final merge = verify citations, set aside < MIN_SUPPORT by count, THEN cap at MAX_CANDIDATES
+CACHE_RULES = ("F0b_verified_citations", RULE)   # accepted attempts of an earlier rule are reused when the check they passed is unchanged (chunk calls)
 
 
 def _sha(text: str) -> str:
@@ -118,14 +119,15 @@ def citation_audit(cands: list[dict]) -> list[dict]:
              "unverified_supporting_ids": c["unverified_supporting_ids"]} for c in cands]
 
 
-def _call_validated(caller, log, attempts_file, kind, index, system, user, allowed_ids):
+def _call_validated(caller, log, attempts_file, kind, index, system, user, allowed_ids, min_support=None):
     """Up to MAX_ATTEMPTS attempts with the problems appended. Accepted attempts are cached so a re-run never pays twice.
     Attempts recorded under the earlier rule (no `rule` field: the three rejected F0 attempts) stay in the file as history
     and do not count towards the attempts of this rule."""
-    prior = [r for r in store.load_jsonl(attempts_file) if r["kind"] == kind and r["index"] == index and r.get("rule") == RULE]
-    for r in prior:
-        if r["accepted"]:
-            return r["candidates"]
+    rows = [r for r in store.load_jsonl(attempts_file) if r["kind"] == kind and r["index"] == index]
+    prior = [r for r in rows if r.get("rule") == RULE]                    # only attempts under THIS rule count
+    cached = [r for r in rows if r["accepted"] and r.get("rule") in CACHE_RULES and (min_support is None or r.get("rule") == RULE)]
+    if cached:                                                               # a chunk accepted under F0b is still valid and is not paid for twice
+        return cached[0]["candidates"]
     problems_prev: list[str] = []
     for attempt in range(len(prior) + 1, params.MAX_ATTEMPTS + 1):
         if not log.allow("stage_b"):
@@ -135,7 +137,7 @@ def _call_validated(caller, log, attempts_file, kind, index, system, user, allow
         r = caller.call(system, prompt)
         log.record("stage_b", getattr(caller, "model", None), r.get("usage"))
         obj, err = parse_response(r["text"])
-        cands, problems = (prompts.validate_stage_b(obj, allowed_ids) if err is None else (None, [err]))
+        cands, problems = (prompts.validate_stage_b(obj, allowed_ids, min_support) if err is None else (None, [err]))
         store.append_jsonl(attempts_file, {"rule": RULE, "kind": kind, "index": index, "attempt": attempt,
                                            "model": getattr(caller, "model", None), "prompt_sha256": _sha(prompt), "raw": r["text"],
                                            "usage": r.get("usage"), "problems": problems, "accepted": cands is not None,
@@ -175,7 +177,7 @@ def run_stage_b(run_dir: Path, caller, log: costlog.CostLog | None = None, candi
         chunk_out += c
     final_input_ids = {i for c in chunk_out for i in c["supporting_ids"]}          # the ids actually present in the final call's input
     user = prompts.B_FINAL_USER_TEMPLATE.replace("{CANDIDATES}", prompts.render_candidates(chunk_out))
-    final = _call_validated(caller, log, attempts, "final", 0, prompts.B_SYSTEM, user, final_input_ids)
+    final = _call_validated(caller, log, attempts, "final", 0, prompts.B_SYSTEM, user, final_input_ids, min_support=params.MIN_SUPPORT)
     if final is None:
         return None
     kept, dropped = [], []
@@ -189,7 +191,8 @@ def run_stage_b(run_dir: Path, caller, log: costlog.CostLog | None = None, candi
                             "reason": f"fewer than {params.MIN_SUPPORT} distinct VERIFIED supporting descriptions (dropped on count alone)"})
     rec = {"experiment": params.EXPERIMENT, "model": getattr(caller, "model", None), "created_at": pd.Timestamp.now(tz="UTC").isoformat(),
            "stage_a_status_counts": status_counts, "n_chunks": len(chunks), "chunk_size": params.CHUNK_SIZE,
-           "rule": RULE, "earlier_rejected_attempts_under_F0": len([r for r in store.load_jsonl(attempts) if r.get("rule") != RULE]),
+           "rule": RULE, "earlier_rejected_attempts": {"F0 (no rule field)": len([r for r in store.load_jsonl(attempts) if r.get("rule") is None]),
+                                         "F0b": len([r for r in store.load_jsonl(attempts) if r.get("rule") == "F0b_verified_citations" and not r["accepted"]])},
            "chunk_citation_audit": [citation_audit(chunk_out)], "final_citation_audit": citation_audit(final),
            "candidates": kept, "dropped": dropped,
            "template_hashes": {k: v for k, v in prompts.template_hashes().items() if k.startswith("B_")},
@@ -233,8 +236,8 @@ def main(argv=None) -> int:
         windows, clean = stage_a_complete(run_dir)
         chunks = make_chunks(clean)
         print(f"Stage B: {sum(len(c) for c in chunks)} non-NONE descriptions in {len(chunks)} chunks of <= {params.CHUNK_SIZE}; "
-              f"{len(chunks) + 1} calls minimum, cap ${params.CAP_STAGE_B:.2f}; rule {RULE}: unknown supporting ids are dropped and audited, "
-              f"support = distinct VERIFIED ids, a candidate needs >= {params.MIN_SUPPORT}")
+              f"{len(chunks) + 1} calls minimum, cap ${params.CAP_STAGE_B:.2f}; rule {RULE}: unknown supporting ids are dropped and audited; final merge: "
+              f"candidates with < {params.MIN_SUPPORT} distinct VERIFIED ids are set aside by count, then at most {params.MAX_CANDIDATES} may remain")
         print("--- system ---\n" + prompts.B_SYSTEM + "\n--- chunk user template ---\n" + prompts.B_CHUNK_USER_TEMPLATE)
         return 0
     run_stage_b(run_dir, TextCaller(params.MODEL))
