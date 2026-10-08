@@ -1,0 +1,41 @@
+{
+  "lock_prereg_sha256": "516c9e595b0f46356aa43ed1842ef560250469269dd4e79ed3505f308359021c",
+  "lock_windows_sha256": "a876e4757602e5b7cd340676b62ec4b035496508bbe56635549ef0837c696581",
+  "code_sha256": "892515531f0a7696f513bfdd26dfb3e0a01fd353b2aca76a9b21464939513987",
+  "B_perm": 10000,
+  "B_boot": 10000,
+  "n_windows": 452,
+  "n_valid": 449,
+  "excluded": {
+    "end_candle_missing": 0,
+    "insufficient_forward_candles": 1,
+    "gap_in_forward_path": 2
+  },
+  "categories": {
+    "sideways_range": {
+      "N": 357,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "INCONCLUSIVE / LOW POWER",
+      "reason": "criteria not met and the data cannot exclude effects of MDE size at every horizon"
+    },
+    "drift_up": {
+      "N": 70,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "INCONCLUSIVE / LOW POWER",
+      "reason": "criteria not met and the data cannot exclude effects of MDE size at every horizon"
+    },
+    "drift_down": {
+      "N": 73,
+      "passing_horizons": [],
+      "frozen_horizon": null,
+      "category": "INCONCLUSIVE / LOW POWER",
+      "reason": "criteria not met and the data cannot exclude effects of MDE size at every horizon"
+    }
+  },
+  "python": "3.11.9",
+  "numpy": "2.4.6",
+  "seconds": 5.7,
+  "completed_at": "2026-10-06T14:15:13.365824+00:00"
+}
