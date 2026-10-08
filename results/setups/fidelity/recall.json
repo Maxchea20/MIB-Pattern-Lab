@@ -1,0 +1,109 @@
+{
+  "derived_parameters_sha256": "6bb57d6443e97b7eb046da4fda9e8c268d4d788c264f3af537f9054739c7e7f1",
+  "eligible": [
+    "S0022",
+    "S0056",
+    "S0099",
+    "S0121",
+    "S0129",
+    "S0157",
+    "S0282",
+    "S0284",
+    "S0396",
+    "S0409",
+    "S0444",
+    "S0550"
+  ],
+  "gate": {
+    "classification": null,
+    "denominator": 12,
+    "evaluated": true,
+    "numerator": 3,
+    "passed": false,
+    "value": 0.25
+  },
+  "per_chart": {
+    "S0022": {
+      "end_ts": "2026-01-14T15:00:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0056": {
+      "end_ts": "2025-10-04T23:45:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0099": {
+      "end_ts": "2026-04-13T21:00:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0121": {
+      "end_ts": "2026-02-02T16:00:00+00:00",
+      "present": true,
+      "recognized": true,
+      "triggered": false
+    },
+    "S0129": {
+      "end_ts": "2025-10-26T04:15:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0157": {
+      "end_ts": "2025-12-16T10:30:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0282": {
+      "end_ts": "2025-12-18T18:30:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0284": {
+      "end_ts": "2026-03-30T00:15:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0396": {
+      "end_ts": "2025-11-30T10:00:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0409": {
+      "end_ts": "2026-01-30T01:45:00+00:00",
+      "present": false,
+      "recognized": false,
+      "triggered": false
+    },
+    "S0444": {
+      "end_ts": "2026-02-15T06:30:00+00:00",
+      "present": true,
+      "recognized": true,
+      "triggered": false
+    },
+    "S0550": {
+      "end_ts": "2026-05-31T01:00:00+00:00",
+      "present": true,
+      "recognized": true,
+      "triggered": true
+    }
+  },
+  "pools": {
+    "counted_triggers": 135,
+    "non_trigger_candidates": 22117
+  },
+  "recognized": [
+    "S0121",
+    "S0444",
+    "S0550"
+  ],
+  "recognizer_sha256": "8b62623b9385cabb5c2a20db3131ee739da3b9eaee2e00cdd854b90af7d8e6f8"
+}

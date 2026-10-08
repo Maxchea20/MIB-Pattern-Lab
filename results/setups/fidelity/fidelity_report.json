@@ -1,0 +1,132 @@
+{
+  "candidate": "bullish_breakout_from_right_edge_range",
+  "cases_planned": {
+    "non_trigger": 100,
+    "trigger": 100
+  },
+  "frequency_reference": {
+    "counted_triggers": 135,
+    "direction": "up",
+    "frequency_counted": {
+      "candles": 26113,
+      "classification": null,
+      "passed": true,
+      "share": 0.005169838777620343,
+      "triggers": 135
+    },
+    "frequency_raw": {
+      "candles": 26113,
+      "classification": null,
+      "passed": true,
+      "share": 0.018305058782981658,
+      "triggers": 478
+    },
+    "g1_counted_ge_100": true,
+    "lockout": {
+      "candles_under_lock_total": 12919,
+      "lock_length_candles": {
+        "max": 4296.0,
+        "mean": 95.6962962962963,
+        "median": 24.0,
+        "min": 24.0,
+        "n": 135,
+        "p90": 83.60000000000001
+      },
+      "locks_longer_than_480_candles": 4,
+      "occurrences_never_invalidated_by_end_of_data": 0,
+      "share_of_evaluated_under_lock_upper_bound": 0.49473442346723856,
+      "suppressed_per_counted": 2.5407407407407407
+    },
+    "name": "bullish_breakout_from_right_edge_range",
+    "presence_candles": 3755,
+    "presence_runs": {
+      "max": 19.0,
+      "mean": 3.3767985611510793,
+      "median": 2.0,
+      "min": 1.0,
+      "n": 1112,
+      "p90": 8.0
+    },
+    "presence_share_of_evaluated": 0.1437981082219584,
+    "raw_triggers": 478,
+    "suppressed_triggers": 343,
+    "trigger_presence_run_length": {
+      "max": 16.0,
+      "mean": 3.6861924686192467,
+      "median": 3.0,
+      "min": 1.0,
+      "n": 478,
+      "p90": 8.0
+    }
+  },
+  "judged": {
+    "errors_unjudged": 0,
+    "non_trigger": 100,
+    "trigger": 100
+  },
+  "non_trigger_judgement_counts": {
+    "NOT_PRESENT": 69,
+    "PRESENT": 31,
+    "UNCLEAR": 0
+  },
+  "non_trigger_present_share": 0.31,
+  "note": "Descriptive and outcome-blind. UNCLEAR counts as not present. The non-trigger present share is reported for context and is not a gate. Fidelity is not profitability.",
+  "recall": {
+    "eligible": 12,
+    "recognized": 3
+  },
+  "trigger_judgement_counts": {
+    "NOT_PRESENT": 12,
+    "PRESENT": 87,
+    "UNCLEAR": 1
+  },
+  "trigger_precision_by_stratum": {
+    "S0_other": {
+      "audited": 10,
+      "present": 10
+    },
+    "S1_directional": {
+      "audited": 20,
+      "present": 17
+    },
+    "S2_sideways": {
+      "audited": 20,
+      "present": 18
+    },
+    "S3_expansion": {
+      "audited": 19,
+      "present": 17
+    },
+    "S4_compression": {
+      "audited": 12,
+      "present": 9
+    },
+    "S5_sharp": {
+      "audited": 11,
+      "present": 9
+    },
+    "S6_slow": {
+      "audited": 8,
+      "present": 7
+    }
+  },
+  "verdict": {
+    "classification": "NOT CODEABLE FAITHFULLY",
+    "passed": false,
+    "precision": {
+      "classification": null,
+      "evaluated": true,
+      "n": 100,
+      "passed": true,
+      "value": 0.87
+    },
+    "recall": {
+      "classification": null,
+      "denominator": 12,
+      "evaluated": true,
+      "numerator": 3,
+      "passed": false,
+      "value": 0.25
+    }
+  }
+}
