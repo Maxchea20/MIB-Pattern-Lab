@@ -1,0 +1,40 @@
+{
+  "K": 3,
+  "database": {
+    "bytes": 71098368,
+    "file": "research_binance.db",
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f"
+  },
+  "definitions": {
+    "DT_S1v2": "(highest high from max(jH+1, t-23) to t - close)/R, defined when a confirmed swing high exists",
+    "UPnet": "(hH - lowest low before jH in the window)/R, hH = latest confirmed swing high, defined when hH exceeds that low"
+  },
+  "discovery_end": "2026-06-01T00:00:00Z",
+  "n_positions": 26113,
+  "quantities": {
+    "DT_S1v2": {
+      "max": 0.9867039213797133,
+      "min": 0.0,
+      "n_defined": 26113,
+      "q25": 0.05385608441849864,
+      "q33": 0.07047451941684665,
+      "q40": 0.08606708110066667,
+      "q60": 0.14030997555359762,
+      "q67": 0.16605442080896776,
+      "q75": 0.20637403460748852
+    },
+    "UPnet": {
+      "max": 1.0,
+      "min": 0.06197659731655599,
+      "n_defined": 26113,
+      "q25": 0.37961588825840115,
+      "q33": 0.4635004947384085,
+      "q40": 0.5457377866400764,
+      "q60": 0.7514109413800901,
+      "q67": 0.8086895991646824,
+      "q75": 0.8742665023910443
+    }
+  },
+  "script_sha256": "46583d49c731fc8a0d6f2d5d85417fff8e73158e7772778788b929afd01043fb",
+  "window": 96
+}
