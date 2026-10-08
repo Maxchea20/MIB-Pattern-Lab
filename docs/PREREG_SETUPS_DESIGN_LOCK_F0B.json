@@ -1,0 +1,92 @@
+{
+  "locked_at": "2026-10-08T04:31:57.423001+00:00",
+  "database_verified": {
+    "file": "research_binance.db",
+    "bytes": 71098368,
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f"
+  },
+  "amendment": {
+    "id": "F0b",
+    "rule": "Stage B: unknown supporting ids are dropped and audited; support = distinct VERIFIED ids",
+    "document": "docs/setups/AMENDMENT_F0B.md",
+    "document_sha256": "420dad3785ef7da29944a60c922fc32543b618e8dc5fb23bc824818bfe732bb3"
+  },
+  "original_f0_lock": {
+    "file": "docs/PREREG_SETUPS_DESIGN_LOCK.json",
+    "file_sha256": "e9ac85d59d67fa9832ed6ad7ca5ec3f32135c18e023cb2096838b98a3549265a",
+    "git_commit": "12ef1f6d613c491cbca082dda7ad8ad353760e2e",
+    "locked_at": "2026-10-07T15:22:14.697133+00:00"
+  },
+  "amended_files": {
+    "src/setups/prompts.py": {
+      "f0_sha256": "bf235594ce050ee6258ce631809b8a861f6473432a938981131a2c57edfd8545",
+      "f0b_sha256": "fb0e0150f832fe3d1c878c11692cd9d0072080a5031f0582411e44ebde37fb37"
+    },
+    "src/setups/discover.py": {
+      "f0_sha256": "24cb3881a9b18c636a2ca3b7936ae113f42998faad786a724a3b247669019bea",
+      "f0b_sha256": "5a9b025abb86bc29c1b5950ab1ed4be4ef136db5ca92675905e270184158c720"
+    }
+  },
+  "unchanged_since_f0_sha256": {
+    "preregistration_setups": "3069082ad8859339a516386bdaa0524fccb7fc15d6e9405d7a60ca1b9f29f9b3",
+    "design_doc": "39fc89db5aa58449e155e9c144817584ee2330898f67ac515a40cd87f84b7199",
+    "real_fills_policy": "94094e53133eade8d344ca1c5253ac4a2037e1b04332e7e5e1fc29ad0dc6f07a",
+    "coverage_report": "10a17f8efb0fbfb669ea245208f675629b7d91fbc65512a0f9bf7e37f62de534",
+    "src/setups/params.py": "30b6ea30c0dcf38a624fbf56032e07eb5ef193bbf49af6cec17d595ac70c6c0a",
+    "src/setups/store.py": "06226397486e2d2411674b4e4175b05baf6f6c4328e4842da186636bb28b4c8b",
+    "src/setups/costlog.py": "11049571f1082c558603ec29d122051f16fe7a778c0f7680a0574656c1233403",
+    "src/setups/sampling.py": "6e634b2db633f9fdd496119e8ef64cb9b1bca58a68396bc01d9e8f1a4dd23cbb",
+    "src/setups/audit.py": "b830447daa46f637a793fade232b8b260f52fe835dac0d490329c3f2ef14d36e",
+    "src/setups/coverage_audit.py": "aa087d2519f84ac914f7e6d78995a98a005c0a1098eb35d6687f11a0841a40e3",
+    "src/charts/renderer.py": "4bf56683ef41f355cdf7419fa52beea9fbe0049a66dd898e0d5f2b5eeb6491c3",
+    "src/charts/windows.py": "1f03838b7d4b3ae77987b0a7be1c9837e75edd6f36eda08b7902aa7d39885a2a",
+    "src/charts/normalize.py": "949cede5618b8115d5c32aaea5e72d8c25279139d5550f6d7c74a9f196eb2a07",
+    "src/data/loader.py": "bbf772a6799650a1655746d540d17370dc446d91a6024e55bae8f3d3f5f1cc1b",
+    "src/validation/window_validation.py": "8ad85cded2bb0354539770262ca23edebf60dc29cd0f77986d18c00d0fd34ed0",
+    "src/discovery/audit.py": "6cc744562c2321db817b5d081793b45c5b3faff1ee21e54ab6304c191d962cac",
+    "src/discovery/discover.py": "2b0c4aeb7cb1efd13c9700f3c5efa772c2df49a70eea48d3cc314374da8528e9",
+    "src/discovery/cost.py": "7b6fc2f325e8d495d8e6ac855fa5b04d0578681d7c91f847c985f377701f9410",
+    "src/discovery/tagset.py": "2300b96a2e82da348337d5aee53547c237d4fb44591b2c83b365a68506ae4698"
+  },
+  "tests_sha256": {
+    "tests/test_setups_audit.py": "26047b1f7707927602e9cf94ad502b95597bc69d6576ce65c49ec6bca740e7ae",
+    "tests/test_setups_coverage.py": "e3f5a05dd8e255dff09b39f03990146b8417a1dcb92494eaca82c57edd7545ce",
+    "tests/test_setups_discover.py": "b1e27fac910806787460c00abda474b47ca09953d456b5b4de90e7a23deef61b",
+    "tests/test_setups_f0b.py": "df5bdc28b7cbe7cc55f29df5fd1dc3f24da9294bea07a662cc0abc07c2a9859a",
+    "tests/test_setups_lock.py": "a2115e4c422df9413d6e41f3b6ebbe81c1b2e2555d8c00e2be6137ce33d8d46b",
+    "tests/test_setups_prereg.py": "3b6436d6dfaf962a138e87c4638f617cd616a74dcc690d1a51bdbd233fea9ed4",
+    "tests/test_setups_sampling.py": "70c7226c2337f757c89acd5c59c3fb0fa0088721d20d5922dcd52e549b29b0c7",
+    "tests/test_setups_verify_charts.py": "2c43f12553588902103ecd9c7a38a6566c398ef1da25d43dd3818397ace10e29"
+  },
+  "preserved_records": {
+    "windows_setups.jsonl": {
+      "sha256": "30a621cf14c247466fd1d294546b982189f8004580c3221f8449909c6422b727"
+    },
+    "sample_meta.json": {
+      "sha256": "038694c5ea8989ab738f4c0293fbfc95f46bd43a136768a76866e45958d37a1b"
+    },
+    "stage_a.jsonl": {
+      "sha256": "5619a0707f883e0c0a4c3d053bf1103f14869e317fc8853d9c0ff3722ae5c64c"
+    },
+    "chart_verification.json": {
+      "sha256": "bc10d0aceebf9f9cef81b329b048a0f53955ba5aa8d95edec2060b942688235b"
+    }
+  },
+  "preserved_append_only_prefixes": {
+    "stage_b_attempts.jsonl": {
+      "lines": 3,
+      "sha256_of_these_lines": "f12ff52124aa6dea5d603cd41c88801e48f80d5110ed5cd15a73bb146c38ff4a"
+    },
+    "cost_log.jsonl": {
+      "lines": 566,
+      "sha256_of_these_lines": "e952f7a42d5bc746bd6a3a5272067b859b066973e0467fe68293b692c3370919"
+    }
+  },
+  "dataset": {
+    "file": "data/research_binance.db",
+    "bytes": 71098368,
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f",
+    "statement": "data/research_binance.db is the canonical dataset for the Setup Discovery experiment."
+  },
+  "git_commit": "603dd02785eaae08cfcbf378210c5e0c4c22ce4e"
+}
