@@ -1,0 +1,40 @@
+{
+  "context_files_sha256": {
+    "docs/REAL_FILLS_POLICY.md": "94094e53133eade8d344ca1c5253ac4a2037e1b04332e7e5e1fc29ad0dc6f07a",
+    "docs/brain/EXPERIMENT4_PLAN.md": "3682b84715a7bf5a3c1d8046e069ea9480f09d08c8c81c5f9a0b985c982f11e5",
+    "docs/setups/SETUP_CANDIDATES.json": "2864bee7c507749fbd6a1f725f8c3dea98180ee434f48765e27514c9a7e5ac51"
+  },
+  "detector_files_and_thresholds_sha256": {
+    "docs/brain/DETECTOR_TRANSLATIONS.md": "ae0fc38a21ab323775a8891aa61b438bd69161ddd9e113e03ffbad28e3238b71",
+    "results/brain/derived_s5.json": "4f2345139d5b9f757646d429a80348233d361306e3023091ba1558ad5ce823d2",
+    "results/setups/recognizer/derived_parameters.json": "6bb57d6443e97b7eb046da4fda9e8c268d4d788c264f3af537f9054739c7e7f1",
+    "src/brain/brain.py": "4af51bcfff55ef8b90d5f667e50e8621834ce78a5f1fbd874153593d800de27d",
+    "src/brain/detectors.py": "9ba4272ce4865651528ade45438b84c09dbfd9a09e0599f2a88939edd09ebc41",
+    "src/setups/derive_params.py": "4e7e9cb7e4a28d4e6bb10a307bdc0d2d436ffc52a8fd4bf8674db88f9fc12ea1",
+    "src/setups/recognizer.py": "8b62623b9385cabb5c2a20db3131ee739da3b9eaee2e00cdd854b90af7d8e6f8"
+  },
+  "detector_version_sha256": "5199bd9a484ba2881c4d704403bf5bbce7eaef5a5cc00c2397e8180ab59ad5d3",
+  "experiment": "brain_15m_v1",
+  "interpretations": {
+    "S1-S4,S6-S8": "Numeric translations of docs/setups/RECOGNIZER_PARAMETER_TABLE.md (judgments J-1..J-14); includes J-9 (c_t < c_{t-3} is OUR translation of 'bearish candles push') and J-14 (C6 RET <= 1.0).",
+    "S5": "J-15: the breakout level is the latest confirmed swing high before the spike's swing high; 'the spike breaks above it' = a completed close above it at or before the spike high; 'holds above' = no later completed close below it. Other S5 conditions as in the Experiment 3 table; the q33 of DT(spike high) is derived (price-only) by src/brain/derive_s5.py.",
+    "S9": "J-16: range = last 24 candles; compact = ZR <= q33(ZR); a prior move exists = UP or DN defined and > q33; direction is decided only at the trigger. 'Repeated tests' and 'waiting near one side' are not coded. The presence condition 'close inside the range' is true by construction (the range includes the decision candle)."
+  },
+  "rules": [
+    "no voting, consensus, ranking, veto, merging, lockout, frequency/fidelity/profitability gate",
+    "detectors are frozen BEFORE any market scan; no detector change after the first scan",
+    "REAL FILLS ONLY: a FIRE is a signal; no entry, fill, stop or target is assumed anywhere"
+  ],
+  "setups": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S9"
+  ],
+  "timeframe": "15m"
+}
