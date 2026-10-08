@@ -1,0 +1,616 @@
+diff --git a/docs/setups/AMENDMENT_F0B.md b/docs/setups/AMENDMENT_F0B.md
+new file mode 100644
+index 0000000..b107df7
+--- /dev/null
++++ b/docs/setups/AMENDMENT_F0B.md
+@@ -0,0 +1,72 @@
++# Amendment F0b — Stage B citation handling
++
++**Status: DRAFT FOR REVIEW. Not applied, not locked.** Amends `docs/PREREGISTRATION_SETUPS.md` section 6 and nothing else.
++The pre-registration file itself is **not edited** (its hash `3069082a…` and the F0 lock stay as they are). This document
++supersedes only the sentence quoted below, and only from the moment the F0b lock is written.
++
++## Why
++
++The Stage B run on 2026-10-08 stopped under the F0 rule: chunk 1 failed all 3 attempts because the model cited supporting
++ids that were not in its input. The record is committed (`e1f99af`: `stage_b_attempts.jsonl`, `cost_log.jsonl`; no
++candidates were written). Audit of the three rejected answers: 2 of 122, 2 of 149 and 15 of 249 cited ids were unknown
++(1.6 %, 1.3 %, 6.0 %); every unknown id was a real chart that had not been shown to the model (14 NONE charts, 1 from the
++other chunk); every candidate still had many verified ids. A citation is bookkeeping about provenance; one wrong id
++rejected an otherwise well-formed answer. No outcome of any kind exists or was used. This amendment repairs the bookkeeping;
++it gives the model no new opportunity to change what a setup is.
++
++## Text replaced (section 6, "Validation (Python)")
++
++> Validation (Python): valid JSON and schema; `direction` in the enum; every `supporting_id` exists; **at most 8**
++> candidates; **at least 15 distinct supporting descriptions** per candidate (otherwise dropped on count alone); output
++> lint; no performance language.
++
++## Replacement text
++
++> **Validation (Python), rule F0b.** Valid JSON and schema; `direction` in the enum; **at most 8** candidates with unique
++> names; output lint; no performance language. **Citations are verified, not trusted.** For every Stage B call, the *verified
++> ids* are the ids that were actually present in **that call's input**: for a chunk call, the descriptions of that chunk; for
++> the final consolidation call, the ids carried by the candidates shown to it. For each candidate:
++> 1. `supporting_ids` becomes the sorted set of **distinct cited ids that are verified**. Nothing is ever substituted,
++>    inferred, added or repaired;
++> 2. what the model cited, verbatim (`cited_supporting_ids`), and every id that could not be verified
++>    (`unverified_supporting_ids`) are **kept in the record** of the attempt and of the candidate, together with the counts
++>    cited / verified;
++> 3. an unverified id **never counts** towards support and **never rejects** an answer by itself; an answer is rejected only
++>    for a structural problem, or if a candidate has **no** verified id;
++> 4. a candidate must have **at least 15 distinct verified supporting descriptions** in the final output, otherwise it is
++>    dropped on count alone (and listed, with its counts, under `dropped`).
++>
++> The same rule applies to the chunk calls and to the final consolidation call. Up to 3 attempts per call remain, with the
++> rejection reasons appended and no hand editing. Attempts recorded before this amendment (the three F0 attempts, which have
++> no `rule` field) stay in the file as history and **do not count** towards the attempts of this rule: the first attempt
++> under F0b is a fresh one. Prompts, parameters, thresholds (15, 8, 120), seeds, caps and the Stage A record are unchanged.
++
++## Exact changes
++
++| File | Change |
++|---|---|
++| `src/setups/prompts.py` | `validate_candidate` no longer rejects unknown ids; new `verify_citations`; `validate_stage_b` returns candidates with verified support and an audit; `render_candidates` shows the nine prompt keys only |
++| `src/setups/discover.py` | `RULE` marker; attempts filtered by rule; citation audit stored in each attempt and in the candidate file; the final call is verified against the ids in its own input; dropped candidates record verified/cited counts |
++| `src/setups/lock.py` (not hashed by F0) | `--write-f0b`, `verify_f0b`; once the F0b lock exists it governs every pipeline step |
++| `docs/setups/AMENDMENT_F0B.md` | this document |
++| `tests/test_setups_discover.py`, `tests/test_setups_lock.py`, `tests/test_setups_f0b.py` | updated / new tests |
++
++Not changed: `params.py`, `sampling.py`, `audit.py`, `costlog.py`, `store.py`, all prompt **templates** (their hashes are
++unchanged), `docs/PREREGISTRATION_SETUPS.md`, the design document, the policy, the coverage report, the F0 lock file, the
++dataset, any archived module.
++
++## What the F0b lock preserves and checks
++
++`docs/PREREG_SETUPS_DESIGN_LOCK_F0B.json` (written once, after approval) records, and every step then verifies:
++* the **original F0 lock** file hash (the F0 lock file is never edited);
++* every file F0 froze is **byte-identical, except exactly `prompts.py` and `discover.py`**, whose F0 and F0b hashes are both recorded;
++* the hash of **this amendment**, and the hashes of all `tests/test_setups_*.py`;
++* the **Stage A record** (`stage_a.jsonl`, `windows_setups.jsonl`, `sample_meta.json`, `chart_verification.json`);
++* the **existing lines** of the append-only `stage_b_attempts.jsonl` (the three failed attempts) and `cost_log.jsonl`
++  (line count and hash of the lines that exist now);
++* prompt-template hashes, parameters, config and dataset exactly as in F0.
++
++## Limits
++
++This changes how citations are counted. It does not look at, select among, or modify any description or candidate text, and
++no price, return or outcome is read. Candidates are not renamed, merged or split. It is disclosed in the final report.
+diff --git a/src/setups/discover.py b/src/setups/discover.py
+index 4bf0545..8ef9f80 100644
+--- a/src/setups/discover.py
++++ b/src/setups/discover.py
+@@ -25,6 +25,7 @@ from src.setups import costlog, params, prompts, store
+ STAGE_A_FILE = "stage_a.jsonl"
+ STAGE_B_FILE = "stage_b_attempts.jsonl"
+ COST_FILE = "cost_log.jsonl"
++RULE = "F0b_verified_citations"       # amendment F0b: unknown supporting ids are dropped and audited, never a reason to reject
+ 
+ 
+ def _sha(text: str) -> str:
+@@ -112,9 +113,16 @@ def make_chunks(clean: dict) -> list[list[dict]]:
+     return [items[i:i + params.CHUNK_SIZE] for i in range(0, len(items), params.CHUNK_SIZE)]
+ 
+ 
++def citation_audit(cands: list[dict]) -> list[dict]:
++    return [{"name": c["name"], "cited_distinct": len(set(c["cited_supporting_ids"])), "verified_distinct": len(c["supporting_ids"]),
++             "unverified_supporting_ids": c["unverified_supporting_ids"]} for c in cands]
++
++
+ def _call_validated(caller, log, attempts_file, kind, index, system, user, allowed_ids):
+-    """Up to MAX_ATTEMPTS attempts with the problems appended; accepted attempts are cached so a re-run never pays twice."""
+-    prior = [r for r in store.load_jsonl(attempts_file) if r["kind"] == kind and r["index"] == index]
++    """Up to MAX_ATTEMPTS attempts with the problems appended. Accepted attempts are cached so a re-run never pays twice.
++    Attempts recorded under the earlier rule (no `rule` field: the three rejected F0 attempts) stay in the file as history
++    and do not count towards the attempts of this rule."""
++    prior = [r for r in store.load_jsonl(attempts_file) if r["kind"] == kind and r["index"] == index and r.get("rule") == RULE]
+     for r in prior:
+         if r["accepted"]:
+             return r["candidates"]
+@@ -128,11 +136,13 @@ def _call_validated(caller, log, attempts_file, kind, index, system, user, allow
+         log.record("stage_b", getattr(caller, "model", None), r.get("usage"))
+         obj, err = parse_response(r["text"])
+         cands, problems = (prompts.validate_stage_b(obj, allowed_ids) if err is None else (None, [err]))
+-        store.append_jsonl(attempts_file, {"kind": kind, "index": index, "attempt": attempt, "model": getattr(caller, "model", None),
+-                                           "prompt_sha256": _sha(prompt), "raw": r["text"], "usage": r.get("usage"),
+-                                           "problems": problems, "accepted": cands is not None, "candidates": cands,
++        store.append_jsonl(attempts_file, {"rule": RULE, "kind": kind, "index": index, "attempt": attempt,
++                                           "model": getattr(caller, "model", None), "prompt_sha256": _sha(prompt), "raw": r["text"],
++                                           "usage": r.get("usage"), "problems": problems, "accepted": cands is not None,
++                                           "candidates": cands, "citation_audit": citation_audit(cands) if cands else None,
+                                            "requested_at": pd.Timestamp.now(tz="UTC").isoformat()})
+-        print(f"[B {kind} {index} attempt {attempt}] {'ACCEPTED' if cands is not None else 'rejected: ' + '; '.join(problems)}")
++        n_un = sum(len(c["unverified_supporting_ids"]) for c in cands) if cands else 0
++        print(f"[B {kind} {index} attempt {attempt}] {'ACCEPTED' + (f' ({n_un} unverified ids dropped, audited)' if n_un else '') if cands is not None else 'rejected: ' + '; '.join(problems)}")
+         if cands is not None:
+             return cands
+         problems_prev = problems
+@@ -163,22 +173,24 @@ def run_stage_b(run_dir: Path, caller, log: costlog.CostLog | None = None, candi
+         if c is None:
+             return None
+         chunk_out += c
+-    all_ids = {r["chart_id"] for ch in chunks for r in ch}
++    final_input_ids = {i for c in chunk_out for i in c["supporting_ids"]}          # the ids actually present in the final call's input
+     user = prompts.B_FINAL_USER_TEMPLATE.replace("{CANDIDATES}", prompts.render_candidates(chunk_out))
+-    final = _call_validated(caller, log, attempts, "final", 0, prompts.B_SYSTEM, user, all_ids)
++    final = _call_validated(caller, log, attempts, "final", 0, prompts.B_SYSTEM, user, final_input_ids)
+     if final is None:
+         return None
+     kept, dropped = [], []
+     for c in final:
+-        n = len(set(c["supporting_ids"]))
+-        c = {**c, "supporting_ids": sorted(set(c["supporting_ids"]))}
++        n = len(c["supporting_ids"])                                      # VERIFIED distinct supporting descriptions
+         if n >= params.MIN_SUPPORT:
+             kept.append(c)
+         else:
+-            dropped.append({"name": c["name"], "distinct_supporting_descriptions": n,
+-                            "reason": f"fewer than {params.MIN_SUPPORT} distinct supporting descriptions (dropped on count alone)"})
++            dropped.append({"name": c["name"], "verified_distinct_supporting_descriptions": n,
++                            "cited_distinct": len(set(c["cited_supporting_ids"])), "unverified_supporting_ids": c["unverified_supporting_ids"],
++                            "reason": f"fewer than {params.MIN_SUPPORT} distinct VERIFIED supporting descriptions (dropped on count alone)"})
+     rec = {"experiment": params.EXPERIMENT, "model": getattr(caller, "model", None), "created_at": pd.Timestamp.now(tz="UTC").isoformat(),
+            "stage_a_status_counts": status_counts, "n_chunks": len(chunks), "chunk_size": params.CHUNK_SIZE,
++           "rule": RULE, "earlier_rejected_attempts_under_F0": len([r for r in store.load_jsonl(attempts) if r.get("rule") != RULE]),
++           "chunk_citation_audit": [citation_audit(chunk_out)], "final_citation_audit": citation_audit(final),
+            "candidates": kept, "dropped": dropped,
+            "template_hashes": {k: v for k, v in prompts.template_hashes().items() if k.startswith("B_")},
+            "note": "" if kept else "no recurring setup recognised"}
+@@ -221,7 +233,8 @@ def main(argv=None) -> int:
+         windows, clean = stage_a_complete(run_dir)
+         chunks = make_chunks(clean)
+         print(f"Stage B: {sum(len(c) for c in chunks)} non-NONE descriptions in {len(chunks)} chunks of <= {params.CHUNK_SIZE}; "
+-              f"{len(chunks) + 1} calls minimum, cap ${params.CAP_STAGE_B:.2f}")
++              f"{len(chunks) + 1} calls minimum, cap ${params.CAP_STAGE_B:.2f}; rule {RULE}: unknown supporting ids are dropped and audited, "
++              f"support = distinct VERIFIED ids, a candidate needs >= {params.MIN_SUPPORT}")
+         print("--- system ---\n" + prompts.B_SYSTEM + "\n--- chunk user template ---\n" + prompts.B_CHUNK_USER_TEMPLATE)
+         return 0
+     run_stage_b(run_dir, TextCaller(params.MODEL))
+diff --git a/src/setups/lock.py b/src/setups/lock.py
+index 75ea065..5cc9c58 100644
+--- a/src/setups/lock.py
++++ b/src/setups/lock.py
+@@ -26,7 +26,13 @@ PREREG = config.ROOT / "docs" / "PREREGISTRATION_SETUPS.md"
+ DESIGN_DOC = config.ROOT / "docs" / "SETUP_DISCOVERY_DESIGN.md"
+ POLICY = config.ROOT / "docs" / "REAL_FILLS_POLICY.md"
+ COVERAGE = config.ROOT / "docs" / "setups" / "COVERAGE_RESEARCH_BINANCE_REPORT.json"
+-DESIGN_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK.json"
++DESIGN_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK.json"          # F0 (original; never modified)
++F0B_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK_F0B.json"        # F0b: F0 + the Stage B citation amendment
++AMENDMENT = config.ROOT / "docs" / "setups" / "AMENDMENT_F0B.md"
++F0B_AMENDED = ("src/setups/prompts.py", "src/setups/discover.py")             # the ONLY locked files F0b may change
++RUN_DIR = config.ROOT / "results" / "setups" / "discovery"
++F0B_PRESERVED = ("windows_setups.jsonl", "sample_meta.json", "stage_a.jsonl", "chart_verification.json")
++F0B_PREFIX_FILES = ("stage_b_attempts.jsonl", "cost_log.jsonl")                # append-only: the existing lines are preserved
+ DOCS = {"preregistration_setups": PREREG, "design_doc": DESIGN_DOC, "real_fills_policy": POLICY, "coverage_report": COVERAGE}
+ # Code and archived modules the discovery design depends on (archived ones are used UNCHANGED; any edit blocks the run).
+ DESIGN_FILES = ("src/setups/params.py", "src/setups/store.py", "src/setups/costlog.py", "src/setups/prompts.py",
+@@ -102,7 +108,7 @@ def current_record() -> dict:
+             "archive_intact": arch}
+ 
+ 
+-def verify_design_lock(lock_path: Path | None = None) -> dict:
++def _verify_f0(lock_path: Path | None = None) -> dict:
+     p = Path(lock_path or DESIGN_LOCK)
+     if not p.exists():
+         raise SystemExit("docs/PREREG_SETUPS_DESIGN_LOCK.json is missing: the Setup Discovery design is not frozen yet.")
+@@ -116,6 +122,90 @@ def verify_design_lock(lock_path: Path | None = None) -> dict:
+     return lock
+ 
+ 
++def _lines_sha(path: Path, n: int | None = None) -> dict:
++    lines = Path(path).read_bytes().replace(b"\r\n", b"\n").split(b"\n")
++    lines = [l for l in lines if l.strip()]
++    lines = lines if n is None else lines[:n]
++    return {"lines": len(lines), "sha256_of_these_lines": hashlib.sha256(b"\n".join(lines) + b"\n").hexdigest()}
++
++
++def f0b_record(run_dir: Path | None = None, f0_lock_path: Path | None = None) -> dict:
++    """What F0b will freeze, computed from the current files. Fails unless the ONLY locked files that differ from the original
++    F0 lock are exactly F0B_AMENDED, and everything else the F0 lock froze is byte-identical."""
++    run_dir = Path(run_dir or RUN_DIR)
++    f0p = Path(f0_lock_path or DESIGN_LOCK)
++    if not f0p.exists() or not AMENDMENT.exists():
++        raise SystemExit("F0b needs the original F0 lock and docs/setups/AMENDMENT_F0B.md.")
++    f0 = json.loads(f0p.read_text(encoding="utf-8"))
++    now = current_record()
++    changed = sorted(k for k, v in f0["sha256"].items() if now["sha256"].get(k) != v)
++    if changed != sorted(F0B_AMENDED):
++        raise SystemExit(f"F0b may change exactly {sorted(F0B_AMENDED)}; files differing from the F0 lock: {changed}")
++    for k in ("prompt_template_sha256", "parameters", "config", "dataset"):
++        if f0[k] != now[k]:
++            raise SystemExit(f"F0b must not change {k}")
++    preserved = {n: {"sha256": file_sha256(run_dir / n)} for n in F0B_PRESERVED}
++    prefixes = {n: _lines_sha(run_dir / n) for n in F0B_PREFIX_FILES}
++    tests = {str(p.relative_to(config.ROOT).as_posix()): file_sha256(p) for p in sorted((config.ROOT / "tests").glob("test_setups_*.py"))}
++    return {"amendment": {"id": "F0b", "rule": "Stage B: unknown supporting ids are dropped and audited; support = distinct VERIFIED ids",
++                          "document": "docs/setups/AMENDMENT_F0B.md", "document_sha256": file_sha256(AMENDMENT)},
++            "original_f0_lock": {"file": str(f0p.relative_to(config.ROOT).as_posix()) if f0p.is_relative_to(config.ROOT) else f0p.name,
++                                 "file_sha256": file_sha256(f0p), "git_commit": f0["git_commit"], "locked_at": f0["locked_at"]},
++            "amended_files": {k: {"f0_sha256": f0["sha256"][k], "f0b_sha256": now["sha256"][k]} for k in F0B_AMENDED},
++            "unchanged_since_f0_sha256": {k: v for k, v in f0["sha256"].items() if k not in F0B_AMENDED},
++            "tests_sha256": tests, "preserved_records": preserved, "preserved_append_only_prefixes": prefixes,
++            "dataset": now["dataset"], "git_commit": now["git_commit"]}
++
++
++def verify_f0b(f0b_path: Path | None = None, run_dir: Path | None = None, f0_lock_path: Path | None = None) -> dict:
++    """F0b holds iff: the original F0 lock file is byte-identical; every file F0 froze is unchanged except the two amended
++    files, which equal their F0b hashes; the amendment, tests, Stage A record, chart verification and the existing lines of
++    the append-only Stage B / cost files are unchanged; templates, parameters, config and dataset are unchanged."""
++    run_dir = Path(run_dir or RUN_DIR)
++    p = Path(f0b_path or F0B_LOCK)
++    if not p.exists():
++        raise SystemExit("docs/PREREG_SETUPS_DESIGN_LOCK_F0B.json is missing: the amended design is not frozen yet.")
++    f0b = json.loads(p.read_text(encoding="utf-8"))
++    f0p = Path(f0_lock_path or DESIGN_LOCK)
++    f0 = json.loads(f0p.read_text(encoding="utf-8"))
++    bad = []
++    if file_sha256(f0p) != f0b["original_f0_lock"]["file_sha256"]:
++        bad.append("original_f0_lock")
++    now = current_record()
++    for k, v in f0b["unchanged_since_f0_sha256"].items():
++        if now["sha256"].get(k) != v or f0["sha256"].get(k) != v:
++            bad.append(k)
++    for k, v in f0b["amended_files"].items():
++        if k not in F0B_AMENDED or f0["sha256"].get(k) != v["f0_sha256"] or now["sha256"].get(k) != v["f0b_sha256"]:
++            bad.append(k)
++    if set(f0b["amended_files"]) != set(F0B_AMENDED) or set(f0b["amended_files"]) | set(f0b["unchanged_since_f0_sha256"]) != set(f0["sha256"]):
++        bad.append("file_set")
++    if file_sha256(AMENDMENT) != f0b["amendment"]["document_sha256"]:
++        bad.append("amendment_document")
++    for k, v in f0b["tests_sha256"].items():
++        if file_sha256(config.ROOT / k) != v:
++            bad.append(k)
++    for n, v in f0b["preserved_records"].items():
++        if file_sha256(run_dir / n) != v["sha256"]:
++            bad.append(n)
++    for n, v in f0b["preserved_append_only_prefixes"].items():
++        if _lines_sha(run_dir / n, v["lines"]) != v:
++            bad.append(n + " (existing lines)")
++    for k in ("prompt_template_sha256", "parameters", "config", "dataset"):
++        if f0[k] != now[k]:
++            bad.append(k)
++    if bad:
++        raise SystemExit(f"F0b LOCK MISMATCH - the amended design changed: {sorted(set(bad))}")
++    return {**f0, "f0b": f0b}
++
++
++def verify_design_lock(lock_path: Path | None = None) -> dict:
++    """With an explicit path: verify that single (F0-format) record. Otherwise F0b governs once it exists; before that F0."""
++    if lock_path is not None:
++        return _verify_f0(lock_path)
++    return verify_f0b() if F0B_LOCK.exists() else _verify_f0()
++
++
+ def require_design_lock(confirm_sha12: str | None, lock_path: Path | None = None) -> dict:
+     """Used by every pipeline step: the design must be locked and unchanged, and the caller must name it."""
+     lock = verify_design_lock(lock_path)
+@@ -129,9 +219,17 @@ def require_design_lock(confirm_sha12: str | None, lock_path: Path | None = None
+ def main(argv=None) -> int:
+     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+     ap.add_argument("--write", action="store_true")
++    ap.add_argument("--write-f0b", action="store_true", help="write docs/PREREG_SETUPS_DESIGN_LOCK_F0B.json (once), after the amendment is approved")
+     ap.add_argument("--db", default=str(CANONICAL_DB))
+     a = ap.parse_args(argv)
+     db = verify_database(a.db)                                   # the lock is only written for the exact canonical file
++    if a.write_f0b:
++        if F0B_LOCK.exists():
++            raise SystemExit("F0b lock already exists; it is written once.")
++        rec = {"locked_at": pd.Timestamp.now(tz="UTC").isoformat(), "database_verified": db, **f0b_record()}
++        F0B_LOCK.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
++        print(f"wrote {F0B_LOCK}\n" + json.dumps(rec, indent=2))
++        return 0
+     rec = current_record()
+     if a.write:
+         if DESIGN_LOCK.exists():
+diff --git a/src/setups/prompts.py b/src/setups/prompts.py
+index e3c9c57..765c973 100644
+--- a/src/setups/prompts.py
++++ b/src/setups/prompts.py
+@@ -189,7 +189,9 @@ def validate_stage_a(obj) -> list[str]:
+     return p
+ 
+ 
+-def validate_candidate(c, allowed_ids: set[str]) -> list[str]:
++def validate_candidate(c) -> list[str]:
++    """Structural problems of one candidate (empty list = fine). Unknown supporting ids are NOT a structural problem:
++    they are handled by verify_citations (amendment F0b)."""
+     if not isinstance(c, dict):
+         return ["candidate is not an object"]
+     if set(c) != set(B_KEYS):
+@@ -205,13 +207,8 @@ def validate_candidate(c, allowed_ids: set[str]) -> list[str]:
+     for k in ("conditions_sequence", "information_required"):
+         if not _is_str_list(c[k]) or not c[k]:
+             p.append(f"{k} must be a non-empty list of strings")
+-    ids = c["supporting_ids"]
+-    if not _is_str_list(ids) or not ids:
++    if not _is_str_list(c["supporting_ids"]) or not c["supporting_ids"]:
+         p.append("supporting_ids must be a non-empty list of strings")
+-    else:
+-        unknown = sorted(set(ids) - allowed_ids)
+-        if unknown:
+-            p.append(f"supporting_ids not found among the input descriptions: {unknown[:5]}")
+     if not p:
+         bad = lint_output(c)
+         if bad:
+@@ -219,8 +216,25 @@ def validate_candidate(c, allowed_ids: set[str]) -> list[str]:
+     return p
+ 
+ 
++def verify_citations(candidates: list[dict], allowed_ids: set[str]) -> list[dict]:
++    """Amendment F0b. `allowed_ids` = the ids that were actually present in THIS call's input. For each candidate:
++    `supporting_ids` becomes the sorted DISTINCT cited ids that are in allowed_ids (the verified support); nothing is ever
++    substituted, inferred or added. What the model cited and what could not be verified is kept in the record:
++    `cited_supporting_ids` (verbatim, order and duplicates preserved) and `unverified_supporting_ids`."""
++    out = []
++    for c in candidates:
++        cited = list(c["supporting_ids"])
++        out.append({**{k: v for k, v in c.items() if k != "supporting_ids"},
++                    "supporting_ids": sorted({i for i in cited if i in allowed_ids}),
++                    "cited_supporting_ids": cited,
++                    "unverified_supporting_ids": sorted({i for i in cited if i not in allowed_ids})})
++    return out
++
++
+ def validate_stage_b(obj, allowed_ids: set[str]) -> tuple[list[dict] | None, list[str]]:
+-    """-> (candidates, problems). At most MAX_CANDIDATES; names unique; every candidate valid."""
++    """-> (candidates with VERIFIED support + citation audit, problems). At most MAX_CANDIDATES; unique names; every
++    candidate structurally valid; every candidate keeps at least one verified supporting id. An unknown id never rejects an
++    answer by itself."""
+     if not isinstance(obj, dict) or not isinstance(obj.get("candidates"), list):
+         return None, ["response must be an object with a 'candidates' list"]
+     cands = obj["candidates"]
+@@ -228,11 +242,17 @@ def validate_stage_b(obj, allowed_ids: set[str]) -> tuple[list[dict] | None, lis
+     if len(cands) > params.MAX_CANDIDATES:
+         p.append(f"at most {params.MAX_CANDIDATES} candidates are allowed; got {len(cands)}")
+     for i, c in enumerate(cands):
+-        p += [f"candidate {i + 1}: {x}" for x in validate_candidate(c, allowed_ids)]
++        p += [f"candidate {i + 1}: {x}" for x in validate_candidate(c)]
+     names = [c.get("name") for c in cands if isinstance(c, dict)]
+     if len(set(names)) != len(names):
+         p.append("candidate names must be unique")
+-    return (None if p else cands), p
++    if p:
++        return None, p
++    verified = verify_citations(cands, allowed_ids)
++    for i, c in enumerate(verified):
++        if not c["supporting_ids"]:
++            p.append(f"candidate {i + 1}: none of its supporting_ids is among the input descriptions")
++    return (None if p else verified), p
+ 
+ 
+ def validate_audit(obj) -> list[str]:
+@@ -259,7 +279,8 @@ def render_description(row: dict) -> str:
+ 
+ 
+ def render_candidates(cands: list[dict]) -> str:
+-    return json.dumps(cands, indent=1, sort_keys=True)
++    """Candidates as shown to the final consolidation call: the nine prompt keys only (verified supporting ids; no audit fields)."""
++    return json.dumps([{k: c[k] for k in B_KEYS} for c in cands], indent=1, sort_keys=True)
+ 
+ 
+ def definition_text(c: dict) -> str:
+diff --git a/tests/test_setups_discover.py b/tests/test_setups_discover.py
+index 44ef8a0..b517c5e 100644
+--- a/tests/test_setups_discover.py
++++ b/tests/test_setups_discover.py
+@@ -189,7 +189,7 @@ def test_stage_b_drops_candidates_with_too_little_support_on_count_alone(tmp_pat
+ 
+     rec = dv.run_stage_b(d, FakeText(fn), candidates_path=tmp_path / "c.json")
+     assert [c["name"] for c in rec["candidates"]] == ["big_one"]
+-    assert rec["dropped"][0]["name"] == "small_one" and rec["dropped"][0]["distinct_supporting_descriptions"] == 10
++    assert rec["dropped"][0]["name"] == "small_one" and rec["dropped"][0]["verified_distinct_supporting_descriptions"] == 10
+ 
+ 
+ def test_stage_b_validation_retries_then_fails_loudly_and_caches_accepted_calls(tmp_path):
+diff --git a/tests/test_setups_f0b.py b/tests/test_setups_f0b.py
+new file mode 100644
+index 0000000..654cb66
+--- /dev/null
++++ b/tests/test_setups_f0b.py
+@@ -0,0 +1,205 @@
++"""Amendment F0b: unknown supporting ids are dropped and audited, support = distinct VERIFIED ids, no outcome involved."""
++import json
++import shutil
++from pathlib import Path
++
++import pytest
++
++from src.setups import discover as dv, lock, params, prompts, store
++from tests.test_setups_discover import FakeText, b_run_dir, cand, stage_a_ok
++
++
++# ------------------------------------------------------------------------ verify_citations ----------
++def test_unknown_ids_never_count_known_ids_do_and_mixed_keeps_only_verified():
++    c = cand(ids=["S0001", "S0002", "S0001", "S9999", "S0003", "S8888"])
++    (v,) = prompts.verify_citations([c], {"S0001", "S0002", "S0003", "S0004"})
++    assert v["supporting_ids"] == ["S0001", "S0002", "S0003"]                          # distinct, sorted, verified only
++    assert v["unverified_supporting_ids"] == ["S8888", "S9999"]                        # never silently discarded
++    assert v["cited_supporting_ids"] == ["S0001", "S0002", "S0001", "S9999", "S0003", "S8888"]   # verbatim, order and duplicates kept
++    assert set(v["supporting_ids"]) <= set(c["supporting_ids"]) & {"S0001", "S0002", "S0003", "S0004"}   # nothing substituted or inferred
++    (u,) = prompts.verify_citations([cand(ids=["S7001", "S7002"])], {"S0001"})
++    assert u["supporting_ids"] == [] and u["unverified_supporting_ids"] == ["S7001", "S7002"]      # unknown ids give no support at all
++    (k,) = prompts.verify_citations([cand(ids=["S0001", "S0002"])], {"S0001", "S0002", "S0003"})
++    assert k["supporting_ids"] == ["S0001", "S0002"] and k["unverified_supporting_ids"] == []      # the S0003 the model did not cite is NOT added
++
++
++def test_validation_rejects_only_structural_problems_or_a_candidate_without_any_verified_id():
++    allowed = {f"S{i:04d}" for i in range(1, 30)}
++    ok, p = prompts.validate_stage_b({"candidates": [cand(ids=["S0001", "S9999"])]}, allowed)
++    assert p == [] and ok[0]["supporting_ids"] == ["S0001"] and ok[0]["unverified_supporting_ids"] == ["S9999"]   # an unknown id alone does not reject
++    none, p = prompts.validate_stage_b({"candidates": [cand(ids=["S9998", "S9999"])]}, allowed)
++    assert none is None and "none of its supporting_ids" in p[0]
++    assert prompts.validate_stage_b({"candidates": [cand(ids=["S0001"], direction="long")]}, allowed)[0] is None
++    assert prompts.validate_stage_b({"candidates": [cand(ids=["S0001"], trigger="it will win")]}, allowed)[0] is None
++    assert prompts.validate_stage_b({"candidates": [cand("a_one", ["S0001"]), cand("a_one", ["S0002"])]}, allowed)[0] is None
++
++
++def test_render_candidates_shows_only_the_nine_prompt_keys():
++    (v,) = prompts.verify_citations([cand(ids=["S0001", "S9999"])], {"S0001"})
++    shown = json.loads(prompts.render_candidates([v]))
++    assert set(shown[0]) == set(prompts.B_KEYS) and shown[0]["supporting_ids"] == ["S0001"]
++    assert "S9999" not in prompts.render_candidates([v])
++
++
++# ---------------------------------------------------------------------------- end to end ----------
++def ids(a, b):
++    return [f"S{i:04d}" for i in range(a, b + 1)]
++
++
++def test_stage_b_counts_only_verified_support_and_keeps_the_audit(tmp_path):
++    d, rows = b_run_dir(tmp_path, n=65)                      # S0001-S0005 are NONE; S0006-S0065 are described
++    seen = []
++
++    def fn(user, n):
++        seen.append(user)
++        if "Descriptions:" in user:                          # chunk call: 30 + 16 + 10 verified ids, with unknown ids mixed in
++            return {"candidates": [cand("big_a", ids(6, 35) + ["S9001", "S9002"]), cand("mid_b", ids(40, 55) + ["S9003"]),
++                                   cand("small_c", ids(56, 65))]}
++        return {"candidates": [cand("big_a", ids(6, 35) + ["S9100"]),                        # 30 verified + 1 unknown -> kept
++                               cand("lost_b", ids(40, 53) + ["S9101", "S9102"]),             # 14 verified + 2 unknown -> dropped (<15)
++                               cand("edge_d", ids(6, 20) + ["S9103"])]}                      # exactly 15 verified + 1 unknown -> kept
++
++    out = tmp_path / "cands.json"
++    rec = dv.run_stage_b(d, FakeText(fn), candidates_path=out)
++    kept = {c["name"]: c for c in rec["candidates"]}
++    assert set(kept) == {"big_a", "edge_d"} and len(kept["edge_d"]["supporting_ids"]) == 15 == params.MIN_SUPPORT
++    assert kept["big_a"]["unverified_supporting_ids"] == ["S9100"] and "S9100" not in kept["big_a"]["supporting_ids"]
++    (dropped,) = rec["dropped"]
++    assert dropped["name"] == "lost_b" and dropped["verified_distinct_supporting_descriptions"] == 14 and dropped["cited_distinct"] == 16
++    assert dropped["unverified_supporting_ids"] == ["S9101", "S9102"]
++    assert rec["rule"] == dv.RULE and rec["earlier_rejected_attempts_under_F0"] == 0
++    # the audit of the chunk call is in the candidate file AND in the attempt record
++    assert any(a["unverified_supporting_ids"] == ["S9001", "S9002"] for a in rec["chunk_citation_audit"][0])
++    attempts = store.load_jsonl(d / dv.STAGE_B_FILE)
++    assert all(a["rule"] == dv.RULE for a in attempts) and [a["kind"] for a in attempts] == ["chunk", "final"]
++    assert attempts[0]["candidates"][0]["unverified_supporting_ids"] == ["S9001", "S9002"]
++    assert attempts[1]["citation_audit"][1]["verified_distinct"] == 14
++    # the final call saw only the verified ids of the chunk candidates, never the unknown ones
++    assert "S9001" not in seen[-1] and "S9003" not in seen[-1]
++
++
++def test_final_call_is_verified_against_the_ids_in_its_own_input(tmp_path):
++    d, rows = b_run_dir(tmp_path, n=65)
++
++    def fn(user, n):
++        if "Descriptions:" in user:
++            return {"candidates": [cand("only_a", ids(6, 25))]}
++        return {"candidates": [cand("only_a", ids(6, 25) + ids(26, 40))]}               # S0026-S0040 are REAL charts, but not in the final input
++
++    rec = dv.run_stage_b(d, FakeText(fn), candidates_path=tmp_path / "c.json")
++    (c,) = rec["candidates"]
++    assert c["supporting_ids"] == ids(6, 25) and c["unverified_supporting_ids"] == ids(26, 40)
++
++
++def test_attempts_made_under_the_f0_rule_do_not_count_and_stay_in_the_file(tmp_path):
++    d, rows = b_run_dir(tmp_path, n=65)
++    old = [{"kind": "chunk", "index": 1, "attempt": i, "accepted": False, "problems": ["supporting_ids not found"], "candidates": None, "raw": "{}"}
++           for i in (1, 2, 3)]
++    (d / dv.STAGE_B_FILE).write_text("\n".join(json.dumps(r) for r in old) + "\n")
++    t = FakeText(lambda u, n: {"candidates": [cand("x_setup", ids(6, 30))]})
++    rec = dv.run_stage_b(d, t, candidates_path=tmp_path / "c.json")
++    assert t.calls == 2 and rec["earlier_rejected_attempts_under_F0"] == 3 and len(rec["candidates"]) == 1
++    lines = store.load_jsonl(d / dv.STAGE_B_FILE)
++    assert lines[:3] == old and all(r.get("rule") == dv.RULE for r in lines[3:])         # history preserved, appended after
++
++
++def test_no_outcome_data_enters_stage_b(tmp_path):
++    d, rows = b_run_dir(tmp_path, n=40)
++    poisoned = [json.loads(l) for l in (d / dv.STAGE_A_FILE).read_text().splitlines()]
++    for r in poisoned:
++        r.update({"ret_24": 123.456, "mfe_12": 9.87, "outcome": "WIN_SECRET", "forward_return": 77.7})
++    (d / dv.STAGE_A_FILE).write_text("\n".join(json.dumps(r) for r in poisoned) + "\n")
++    seen = []
++
++    def fn(user, n):
++        seen.append(user)
++        return {"candidates": [cand("x_setup", ids(6, 40))]}
++
++    dv.run_stage_b(d, FakeText(fn), candidates_path=tmp_path / "c.json")
++    text = "\n".join(seen)
++    assert not any(w in text for w in ("123.456", "9.87", "WIN_SECRET", "77.7", "ret_24", "mfe_12", "forward_return"))
++
++
++# ----------------------------------------------------------------------------------- F0b lock ----------
++@pytest.fixture
++def f0b_env(tmp_path, monkeypatch):
++    """A tiny world in which the F0 lock was written BEFORE prompts.py / discover.py changed (their F0 hashes are stale)."""
++    cur = lock.current_record()
++    f0 = {"locked_at": "2026-10-07T15:22:14+00:00", "git_commit": "deadbeef", **cur}
++    f0["sha256"] = dict(cur["sha256"])
++    for k in lock.F0B_AMENDED:
++        f0["sha256"][k] = "0" * 64                           # what F0 recorded before the amendment
++    f0p = tmp_path / "f0.json"
++    f0p.write_text(json.dumps(f0))
++    run = tmp_path / "run"
++    run.mkdir()
++    for n in lock.F0B_PRESERVED:
++        (run / n).write_text(f"record {n}\n")
++    (run / "stage_b_attempts.jsonl").write_text("\n".join(json.dumps({"attempt": i}) for i in (1, 2, 3)) + "\n")
++    (run / "cost_log.jsonl").write_text("\n".join(json.dumps({"call": i}) for i in range(1, 6)) + "\n")
++    return f0p, run, tmp_path / "f0b.json"
++
++
++def write_f0b(f0p, run, path):
++    rec = lock.f0b_record(run, f0p)
++    path.write_text(json.dumps({"locked_at": "x", **rec}))
++    return rec
++
++
++def test_f0b_records_both_hashes_of_exactly_the_two_amended_files_and_verifies(f0b_env):
++    f0p, run, f0b = f0b_env
++    rec = write_f0b(f0p, run, f0b)
++    assert set(rec["amended_files"]) == set(lock.F0B_AMENDED)
++    assert all(v["f0_sha256"] == "0" * 64 and v["f0b_sha256"] != "0" * 64 for v in rec["amended_files"].values())
++    assert rec["original_f0_lock"]["file_sha256"] == lock.file_sha256(f0p) and rec["amendment"]["document_sha256"]
++    assert set(rec["tests_sha256"]) >= {"tests/test_setups_f0b.py", "tests/test_setups_discover.py"}
++    assert lock.verify_f0b(f0b, run, f0p)["f0b"]["amendment"]["id"] == "F0b"
++
++
++def test_f0b_refuses_when_any_other_frozen_file_differs_from_the_f0_lock(f0b_env):
++    f0p, run, f0b = f0b_env
++    f0 = json.loads(f0p.read_text())
++    f0["sha256"]["src/setups/params.py"] = "1" * 64
++    f0p.write_text(json.dumps(f0))
++    with pytest.raises(SystemExit):
++        lock.f0b_record(run, f0p)
++
++
++def test_f0b_detects_tampering_with_every_preserved_thing(f0b_env, tmp_path):
++    f0p, run, f0b = f0b_env
++    write_f0b(f0p, run, f0b)
++    # appending to the append-only files is allowed (Stage B re-runs add attempts and cost lines) ...
++    with open(run / "stage_b_attempts.jsonl", "a") as f:
++        f.write(json.dumps({"attempt": 4}) + "\n")
++    with open(run / "cost_log.jsonl", "a") as f:
++        f.write(json.dumps({"call": 6}) + "\n")
++    assert lock.verify_f0b(f0b, run, f0p)
++    # ... editing an existing line is not
++    lines = (run / "stage_b_attempts.jsonl").read_text().splitlines()
++    (run / "stage_b_attempts.jsonl").write_text("\n".join([json.dumps({"attempt": 99})] + lines[1:]) + "\n")
++    with pytest.raises(SystemExit):
++        lock.verify_f0b(f0b, run, f0p)
++    (run / "stage_b_attempts.jsonl").write_text("\n".join(lines) + "\n")
++    assert lock.verify_f0b(f0b, run, f0p)
++    (run / "stage_a.jsonl").write_text("changed\n")                                   # Stage A record
++    with pytest.raises(SystemExit):
++        lock.verify_f0b(f0b, run, f0p)
++    (run / "stage_a.jsonl").write_text("record stage_a.jsonl\n")
++    f0 = json.loads(f0p.read_text())                                                    # the original F0 lock file itself
++    f0["locked_at"] = "tampered"
++    f0p.write_text(json.dumps(f0))
++    with pytest.raises(SystemExit):
++        lock.verify_f0b(f0b, run, f0p)
++
++
++def test_f0b_lock_is_written_once_and_governs_afterwards(f0b_env, monkeypatch):
++    f0p, run, f0b = f0b_env
++    write_f0b(f0p, run, f0b)
++    monkeypatch.setattr(lock, "F0B_LOCK", f0b)
++    monkeypatch.setattr(lock, "RUN_DIR", run)
++    monkeypatch.setattr(lock, "DESIGN_LOCK", f0p)
++    assert lock.verify_design_lock()["f0b"]["amendment"]["id"] == "F0b"               # F0b is what verify_design_lock() checks now
++    sha12 = json.loads(f0p.read_text())["sha256"]["preregistration_setups"][:12]
++    assert lock.require_design_lock(sha12)
++    with pytest.raises(SystemExit):
++        lock.main(["--write-f0b", "--db", "data/market_Data_Clean.db"])               # refuses the wrong database before anything else
