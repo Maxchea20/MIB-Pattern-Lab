@@ -40,7 +40,7 @@ def replay(stream, brain: SetupBrain, log_path: Path | None = None) -> list[dict
     return events
 
 
-def batch_scan(ts, o, h, l, c, thr: dict, version: str = "unversioned", step_ns: int = STEP_NS) -> list[dict]:
+def batch_scan(ts, o, h, l, c, thr: dict, version: str = "unversioned", step_ns: int = STEP_NS, evaluate_fn=None) -> list[dict]:
     """Chronological batch scan over arrays: window states for every evaluable candle first, then fires and invalidations.
     Returns FIRE and INVALIDATED events in the same order and with the same fields as the replay (except `input_digest`)."""
     ts = np.asarray(ts, np.int64)
@@ -52,7 +52,7 @@ def batch_scan(ts, o, h, l, c, thr: dict, version: str = "unversioned", step_ns:
     for t in range(W - 1, n):
         if ts[t] - ts[t - W + 1] == (W - 1) * step_ns and np.all(np.diff(ts[t - W + 1:t + 1]) == step_ns):
             ok[t] = True
-            states[t] = det.evaluate(h[t - W + 1:t + 1], l[t - W + 1:t + 1], c[t - W + 1:t + 1], thr)
+            states[t] = (evaluate_fn or det.evaluate)(h[t - W + 1:t + 1], l[t - W + 1:t + 1], c[t - W + 1:t + 1], thr)
     run = np.zeros((n, len(det.IDS)), int)                       # presence run length ending at t (0 = absent)
     start = np.zeros((n, len(det.IDS)), int)
     for t in range(n):

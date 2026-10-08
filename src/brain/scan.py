@@ -34,32 +34,33 @@ def load_thresholds(root: Path = Path(config.ROOT)) -> dict:
     return det.with_s5_threshold(rz.thresholds_from(derived), s5)
 
 
-def cross_check_experiment3(ts, o, h, l, c, thr, fires: list[dict]) -> dict:
+def cross_check_experiment3(ts, o, h, l, c, thr, fires: list[dict], skip=()) -> dict:
     """The seven imported detectors must fire on exactly the candles on which the Experiment 3 recognizer logged a raw trigger."""
-    old = {(k, e["trigger_idx"]) for e in rz.recognize(ts, o, h, l, c, thr) for k in [e["cand"]]}
+    skipped = {det.RZ_KEY[x] for x in skip}
+    old = {(k, e["trigger_idx"]) for e in rz.recognize(ts, o, h, l, c, thr) for k in [e["cand"]] if k not in skipped}
     inv = {v: k for k, v in det.RZ_KEY.items()}
-    new = {(det.RZ_KEY[f["setup_id"]], f["trigger_idx"]) for f in fires if f["setup_id"] in det.RZ_KEY}
+    new = {(det.RZ_KEY[f["setup_id"]], f["trigger_idx"]) for f in fires if f["setup_id"] in det.RZ_KEY and f["setup_id"] not in skip}
     return {"experiment3_raw_triggers": len(old), "brain_fires_same_setups": len(new), "identical": old == new,
             "only_in_experiment3": sorted(old - new)[:10], "only_in_brain": sorted(new - old)[:10]}
 
 
 def run_scan(df: pd.DataFrame, thr: dict, version: str, out_dir: Path, cutoff: str = params.DISCOVERY_END, stage_a_rows=None,
-             support=None, examples: bool = True) -> dict:
+             support=None, examples: bool = True, brain_factory=None, evaluate_fn=None, cross_skip=()) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     ts = df["ts"].dt.as_unit("ns").astype("int64").to_numpy()
     o, h, l, c = (df[k].to_numpy(float) for k in ("open", "high", "low", "close"))
     cutoff_ns = int(pd.Timestamp(cutoff).as_unit("ns").value)
     card = replay.dataset_card(df)
-    brain = SetupBrain(thr, version)
+    brain = brain_factory(thr, version) if brain_factory else SetupBrain(thr, version)
     events = replay.replay(replay.candle_stream(df), brain, out_dir / "replay_log.jsonl")           # live-like: one candle at a time
-    batch = replay.batch_scan(ts, o, h, l, c, thr, version)                                           # independent chronological scan
+    batch = replay.batch_scan(ts, o, h, l, c, thr, version, evaluate_fn=evaluate_fn)                                           # independent chronological scan
     equal = replay.comparable(events) == replay.comparable(batch)
     if not equal:
         (out_dir / "MISMATCH_replay_vs_batch.json").write_text(json.dumps({"replay": len(events), "batch": len(batch)}))
         raise SystemExit("BUG: incremental replay and batch scan differ. The run is aborted; the detectors are not edited to hide it.")
     fires = [e for e in events if e["event"] == "FIRE"]
     invs = [e for e in events if e["event"] == "INVALIDATED"]
-    x3 = cross_check_experiment3(ts, o, h, l, c, thr, fires)
+    x3 = cross_check_experiment3(ts, o, h, l, c, thr, fires, skip=cross_skip)
     if not x3["identical"]:
         (out_dir / "MISMATCH_vs_experiment3.json").write_text(json.dumps(x3, indent=2))
         raise SystemExit("BUG: the imported detectors disagree with the Experiment 3 recognizer. Aborted; nothing was edited.")
