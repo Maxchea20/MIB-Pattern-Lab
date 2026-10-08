@@ -1,0 +1,187 @@
+{
+  "locked_at": "2026-10-08T05:56:46.073968+00:00",
+  "git_commit": "d99a05bfe9632478c760a30af48ceefe9fd19953",
+  "database_verified": {
+    "file": "research_binance.db",
+    "bytes": 71098368,
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f"
+  },
+  "id": "F1",
+  "principle": "The setup definitions are frozen exactly as the model returned them. No AI step follows: no merging, splitting, renaming, trigger or lookback changes, and no removal of examples.",
+  "candidates_file": {
+    "path": "docs/setups/SETUP_CANDIDATES.json",
+    "sha256": "2864bee7c507749fbd6a1f725f8c3dea98180ee434f48765e27514c9a7e5ac51",
+    "rule": "F0c_prune_before_cap",
+    "n_candidates": 8,
+    "n_dropped": 1
+  },
+  "candidates": [
+    {
+      "name": "bullish_breakout_from_right_edge_consolidation",
+      "direction": "up",
+      "verified_supporting_descriptions": 20,
+      "definition_sha256": "975cbcc6a8340ffed41dd826d92a632abcf0ced90cb425de39088fc4a867f02d"
+    },
+    {
+      "name": "bullish_rebound_breakout_after_drop",
+      "direction": "up",
+      "verified_supporting_descriptions": 22,
+      "definition_sha256": "09cf18beedfb6e60438598923767ff8cf11f1ca02f7fd0451c20c57dcb2199c2"
+    },
+    {
+      "name": "bearish_breakdown_from_right_edge_range",
+      "direction": "down",
+      "verified_supporting_descriptions": 21,
+      "definition_sha256": "376a9d097d3124e9ae3473d9656f807c8e8efadf9dfcf566d8e403b5c9ebd80d"
+    },
+    {
+      "name": "bearish_continuation_below_broken_support",
+      "direction": "down",
+      "verified_supporting_descriptions": 16,
+      "definition_sha256": "2e80be3bf3c31ff56c978153c49c0318e99b3d4e7d5f8d1e343854e85901359d"
+    },
+    {
+      "name": "bullish_continuation_after_spike_and_pullback",
+      "direction": "up",
+      "verified_supporting_descriptions": 17,
+      "definition_sha256": "c7dc5403837ae5348863f58295429a06d6264f8868ae652f725d6a5fc19865b4"
+    },
+    {
+      "name": "bearish_rejection_from_recent_high",
+      "direction": "down",
+      "verified_supporting_descriptions": 18,
+      "definition_sha256": "489be5ab696d93fb23be64e2df198c005ba2c05a7c54b4a384dfbbf53ee84d76"
+    },
+    {
+      "name": "bullish_breakout_from_right_edge_range",
+      "direction": "up",
+      "verified_supporting_descriptions": 47,
+      "definition_sha256": "dbec207dc86d57191bf060f04672f27ecee443fa58d53d7b7142cf0f250cd280"
+    },
+    {
+      "name": "bearish_breakdown_from_right_edge_support",
+      "direction": "down",
+      "verified_supporting_descriptions": 15,
+      "definition_sha256": "1d382662caabf387470569373b2182e41abf40f5b295ac0b227d13248a7f3c74"
+    }
+  ],
+  "dropped": [
+    {
+      "name": "tight_range_breakout_both_directions",
+      "verified": 6
+    }
+  ],
+  "stage_a": {
+    "n_descriptions": 558,
+    "status_counts": {
+      "ACTIONABLE_NOW": 62,
+      "DEVELOPING": 126,
+      "NONE": 370
+    },
+    "final_descriptions_sha256": "501dd177a627f8282143c82e0df880e084ce47fc2fb0376180fca8010293ee06",
+    "rows_in_file": 563
+  },
+  "stage_b": {
+    "attempt_rows": 9,
+    "rows": [
+      {
+        "rule": "F0",
+        "kind": "chunk",
+        "index": 1,
+        "attempt": 1,
+        "accepted": false,
+        "raw_sha256": "6c490f966b740e9d48ab775af1e03c582b1d84f4655e991dc16293971272d3c2"
+      },
+      {
+        "rule": "F0",
+        "kind": "chunk",
+        "index": 1,
+        "attempt": 2,
+        "accepted": false,
+        "raw_sha256": "1e52c2b22000d96594734a4c7d7cd8a0ec2838647b09d927bfd7db9bf5608eec"
+      },
+      {
+        "rule": "F0",
+        "kind": "chunk",
+        "index": 1,
+        "attempt": 3,
+        "accepted": false,
+        "raw_sha256": "802ca8a6c5f07bd7203672a75590312b508f534819599ef5544c930767dea29c"
+      },
+      {
+        "rule": "F0b_verified_citations",
+        "kind": "chunk",
+        "index": 1,
+        "attempt": 1,
+        "accepted": true,
+        "raw_sha256": "1f6c71455d476374bf25bac85dfc14f063c7634e70f65126fa2594405f1e658c"
+      },
+      {
+        "rule": "F0b_verified_citations",
+        "kind": "chunk",
+        "index": 2,
+        "attempt": 1,
+        "accepted": true,
+        "raw_sha256": "ed01fc978f9263d98d8c633467715a42508af2b8e8910d2b0f590ccfe5868685"
+      },
+      {
+        "rule": "F0b_verified_citations",
+        "kind": "final",
+        "index": 0,
+        "attempt": 1,
+        "accepted": false,
+        "raw_sha256": "3ccb03efa0e5e587518b5201dbda7d9debe2b0b332b59587d31987a0a1139d6d"
+      },
+      {
+        "rule": "F0b_verified_citations",
+        "kind": "final",
+        "index": 0,
+        "attempt": 2,
+        "accepted": false,
+        "raw_sha256": "3ccb03efa0e5e587518b5201dbda7d9debe2b0b332b59587d31987a0a1139d6d"
+      },
+      {
+        "rule": "F0b_verified_citations",
+        "kind": "final",
+        "index": 0,
+        "attempt": 3,
+        "accepted": false,
+        "raw_sha256": "3ccb03efa0e5e587518b5201dbda7d9debe2b0b332b59587d31987a0a1139d6d"
+      },
+      {
+        "rule": "F0c_prune_before_cap",
+        "kind": "final",
+        "index": 0,
+        "attempt": 1,
+        "accepted": true,
+        "raw_sha256": "3ccb03efa0e5e587518b5201dbda7d9debe2b0b332b59587d31987a0a1139d6d"
+      }
+    ],
+    "accepted_final_raw_sha256": "3ccb03efa0e5e587518b5201dbda7d9debe2b0b332b59587d31987a0a1139d6d"
+  },
+  "cost": {
+    "lines": 572,
+    "total_usd": 1.052416
+  },
+  "files_sha256": {
+    "windows_setups.jsonl": "30a621cf14c247466fd1d294546b982189f8004580c3221f8449909c6422b727",
+    "sample_meta.json": "038694c5ea8989ab738f4c0293fbfc95f46bd43a136768a76866e45958d37a1b",
+    "stage_a.jsonl": "5619a0707f883e0c0a4c3d053bf1103f14869e317fc8853d9c0ff3722ae5c64c",
+    "chart_verification.json": "bc10d0aceebf9f9cef81b329b048a0f53955ba5aa8d95edec2060b942688235b",
+    "stage_b_attempts.jsonl": "2bf782db168891640d5409f125d928ae2e5b0a5755e5bd7c3620ccbd1eb254d6",
+    "cost_log.jsonl": "9ef3d85b719d5cb43a2dac4668e4a8c1e04613e6c5c3d4e1ea54070c09fd61ea"
+  },
+  "locks_sha256": {
+    "f0": "e9ac85d59d67fa9832ed6ad7ca5ec3f32135c18e023cb2096838b98a3549265a",
+    "f0b": "a2f0ddd894892d35880585ce421e7c7dfff6fb33fc00ff03f88f6f0d6f83b633",
+    "f0c": "0a59f644bce9aea0404339f7738872927d6613c4a09cdfaf243d74760587d2a2",
+    "amendment_f0b": "420dad3785ef7da29944a60c922fc32543b618e8dc5fb23bc824818bfe732bb3",
+    "amendment_f0c": "b99537455acb6adb391e5b70c0ccb2ff77aed79587c8704a267ce2029c23bb78"
+  },
+  "dataset": {
+    "file": "data/research_binance.db",
+    "bytes": 71098368,
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f",
+    "statement": "data/research_binance.db is the canonical dataset for the Setup Discovery experiment."
+  }
+}
