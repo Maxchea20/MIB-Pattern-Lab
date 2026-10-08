@@ -1,6 +1,6 @@
 # Amendment F0b — Stage B citation handling
 
-**Status: DRAFT FOR REVIEW. Not applied, not locked.** Amends `docs/PREREGISTRATION_SETUPS.md` section 6 and nothing else.
+**Status: APPROVED by the project owner on 2026-10-08 (Option 1) and applied. Locked by `docs/PREREG_SETUPS_DESIGN_LOCK_F0B.json`, which is written after this text is committed.** Amends `docs/PREREGISTRATION_SETUPS.md` section 6 and nothing else. The three rejected F0 Stage B attempts (commit `e1f99af`) are preserved unchanged as evidence.
 The pre-registration file itself is **not edited** (its hash `3069082a…` and the F0 lock stay as they are). This document
 supersedes only the sentence quoted below, and only from the moment the F0b lock is written.
 

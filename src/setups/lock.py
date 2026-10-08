@@ -26,7 +26,13 @@ PREREG = config.ROOT / "docs" / "PREREGISTRATION_SETUPS.md"
 DESIGN_DOC = config.ROOT / "docs" / "SETUP_DISCOVERY_DESIGN.md"
 POLICY = config.ROOT / "docs" / "REAL_FILLS_POLICY.md"
 COVERAGE = config.ROOT / "docs" / "setups" / "COVERAGE_RESEARCH_BINANCE_REPORT.json"
-DESIGN_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK.json"
+DESIGN_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK.json"          # F0 (original; never modified)
+F0B_LOCK = config.ROOT / "docs" / "PREREG_SETUPS_DESIGN_LOCK_F0B.json"        # F0b: F0 + the Stage B citation amendment
+AMENDMENT = config.ROOT / "docs" / "setups" / "AMENDMENT_F0B.md"
+F0B_AMENDED = ("src/setups/prompts.py", "src/setups/discover.py")             # the ONLY locked files F0b may change
+RUN_DIR = config.ROOT / "results" / "setups" / "discovery"
+F0B_PRESERVED = ("windows_setups.jsonl", "sample_meta.json", "stage_a.jsonl", "chart_verification.json")
+F0B_PREFIX_FILES = ("stage_b_attempts.jsonl", "cost_log.jsonl")                # append-only: the existing lines are preserved
 DOCS = {"preregistration_setups": PREREG, "design_doc": DESIGN_DOC, "real_fills_policy": POLICY, "coverage_report": COVERAGE}
 # Code and archived modules the discovery design depends on (archived ones are used UNCHANGED; any edit blocks the run).
 DESIGN_FILES = ("src/setups/params.py", "src/setups/store.py", "src/setups/costlog.py", "src/setups/prompts.py",
@@ -102,7 +108,7 @@ def current_record() -> dict:
             "archive_intact": arch}
 
 
-def verify_design_lock(lock_path: Path | None = None) -> dict:
+def _verify_f0(lock_path: Path | None = None) -> dict:
     p = Path(lock_path or DESIGN_LOCK)
     if not p.exists():
         raise SystemExit("docs/PREREG_SETUPS_DESIGN_LOCK.json is missing: the Setup Discovery design is not frozen yet.")
@@ -114,6 +120,90 @@ def verify_design_lock(lock_path: Path | None = None) -> dict:
     if changed or lock["parameters"] != now["parameters"]:
         raise SystemExit(f"DESIGN LOCK MISMATCH - the frozen design changed: {changed or 'parameters'}")
     return lock
+
+
+def _lines_sha(path: Path, n: int | None = None) -> dict:
+    lines = Path(path).read_bytes().replace(b"\r\n", b"\n").split(b"\n")
+    lines = [l for l in lines if l.strip()]
+    lines = lines if n is None else lines[:n]
+    return {"lines": len(lines), "sha256_of_these_lines": hashlib.sha256(b"\n".join(lines) + b"\n").hexdigest()}
+
+
+def f0b_record(run_dir: Path | None = None, f0_lock_path: Path | None = None) -> dict:
+    """What F0b will freeze, computed from the current files. Fails unless the ONLY locked files that differ from the original
+    F0 lock are exactly F0B_AMENDED, and everything else the F0 lock froze is byte-identical."""
+    run_dir = Path(run_dir or RUN_DIR)
+    f0p = Path(f0_lock_path or DESIGN_LOCK)
+    if not f0p.exists() or not AMENDMENT.exists():
+        raise SystemExit("F0b needs the original F0 lock and docs/setups/AMENDMENT_F0B.md.")
+    f0 = json.loads(f0p.read_text(encoding="utf-8"))
+    now = current_record()
+    changed = sorted(k for k, v in f0["sha256"].items() if now["sha256"].get(k) != v)
+    if changed != sorted(F0B_AMENDED):
+        raise SystemExit(f"F0b may change exactly {sorted(F0B_AMENDED)}; files differing from the F0 lock: {changed}")
+    for k in ("prompt_template_sha256", "parameters", "config", "dataset"):
+        if f0[k] != now[k]:
+            raise SystemExit(f"F0b must not change {k}")
+    preserved = {n: {"sha256": file_sha256(run_dir / n)} for n in F0B_PRESERVED}
+    prefixes = {n: _lines_sha(run_dir / n) for n in F0B_PREFIX_FILES}
+    tests = {str(p.relative_to(config.ROOT).as_posix()): file_sha256(p) for p in sorted((config.ROOT / "tests").glob("test_setups_*.py"))}
+    return {"amendment": {"id": "F0b", "rule": "Stage B: unknown supporting ids are dropped and audited; support = distinct VERIFIED ids",
+                          "document": "docs/setups/AMENDMENT_F0B.md", "document_sha256": file_sha256(AMENDMENT)},
+            "original_f0_lock": {"file": str(f0p.relative_to(config.ROOT).as_posix()) if f0p.is_relative_to(config.ROOT) else f0p.name,
+                                 "file_sha256": file_sha256(f0p), "git_commit": f0["git_commit"], "locked_at": f0["locked_at"]},
+            "amended_files": {k: {"f0_sha256": f0["sha256"][k], "f0b_sha256": now["sha256"][k]} for k in F0B_AMENDED},
+            "unchanged_since_f0_sha256": {k: v for k, v in f0["sha256"].items() if k not in F0B_AMENDED},
+            "tests_sha256": tests, "preserved_records": preserved, "preserved_append_only_prefixes": prefixes,
+            "dataset": now["dataset"], "git_commit": now["git_commit"]}
+
+
+def verify_f0b(f0b_path: Path | None = None, run_dir: Path | None = None, f0_lock_path: Path | None = None) -> dict:
+    """F0b holds iff: the original F0 lock file is byte-identical; every file F0 froze is unchanged except the two amended
+    files, which equal their F0b hashes; the amendment, tests, Stage A record, chart verification and the existing lines of
+    the append-only Stage B / cost files are unchanged; templates, parameters, config and dataset are unchanged."""
+    run_dir = Path(run_dir or RUN_DIR)
+    p = Path(f0b_path or F0B_LOCK)
+    if not p.exists():
+        raise SystemExit("docs/PREREG_SETUPS_DESIGN_LOCK_F0B.json is missing: the amended design is not frozen yet.")
+    f0b = json.loads(p.read_text(encoding="utf-8"))
+    f0p = Path(f0_lock_path or DESIGN_LOCK)
+    f0 = json.loads(f0p.read_text(encoding="utf-8"))
+    bad = []
+    if file_sha256(f0p) != f0b["original_f0_lock"]["file_sha256"]:
+        bad.append("original_f0_lock")
+    now = current_record()
+    for k, v in f0b["unchanged_since_f0_sha256"].items():
+        if now["sha256"].get(k) != v or f0["sha256"].get(k) != v:
+            bad.append(k)
+    for k, v in f0b["amended_files"].items():
+        if k not in F0B_AMENDED or f0["sha256"].get(k) != v["f0_sha256"] or now["sha256"].get(k) != v["f0b_sha256"]:
+            bad.append(k)
+    if set(f0b["amended_files"]) != set(F0B_AMENDED) or set(f0b["amended_files"]) | set(f0b["unchanged_since_f0_sha256"]) != set(f0["sha256"]):
+        bad.append("file_set")
+    if file_sha256(AMENDMENT) != f0b["amendment"]["document_sha256"]:
+        bad.append("amendment_document")
+    for k, v in f0b["tests_sha256"].items():
+        if file_sha256(config.ROOT / k) != v:
+            bad.append(k)
+    for n, v in f0b["preserved_records"].items():
+        if file_sha256(run_dir / n) != v["sha256"]:
+            bad.append(n)
+    for n, v in f0b["preserved_append_only_prefixes"].items():
+        if _lines_sha(run_dir / n, v["lines"]) != v:
+            bad.append(n + " (existing lines)")
+    for k in ("prompt_template_sha256", "parameters", "config", "dataset"):
+        if f0[k] != now[k]:
+            bad.append(k)
+    if bad:
+        raise SystemExit(f"F0b LOCK MISMATCH - the amended design changed: {sorted(set(bad))}")
+    return {**f0, "f0b": f0b}
+
+
+def verify_design_lock(lock_path: Path | None = None) -> dict:
+    """With an explicit path: verify that single (F0-format) record. Otherwise F0b governs once it exists; before that F0."""
+    if lock_path is not None:
+        return _verify_f0(lock_path)
+    return verify_f0b() if F0B_LOCK.exists() else _verify_f0()
 
 
 def require_design_lock(confirm_sha12: str | None, lock_path: Path | None = None) -> dict:
@@ -129,9 +219,17 @@ def require_design_lock(confirm_sha12: str | None, lock_path: Path | None = None
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--write-f0b", action="store_true", help="write docs/PREREG_SETUPS_DESIGN_LOCK_F0B.json (once), after the amendment is approved")
     ap.add_argument("--db", default=str(CANONICAL_DB))
     a = ap.parse_args(argv)
     db = verify_database(a.db)                                   # the lock is only written for the exact canonical file
+    if a.write_f0b:
+        if F0B_LOCK.exists():
+            raise SystemExit("F0b lock already exists; it is written once.")
+        rec = {"locked_at": pd.Timestamp.now(tz="UTC").isoformat(), "database_verified": db, **f0b_record()}
+        F0B_LOCK.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+        print(f"wrote {F0B_LOCK}\n" + json.dumps(rec, indent=2))
+        return 0
     rec = current_record()
     if a.write:
         if DESIGN_LOCK.exists():

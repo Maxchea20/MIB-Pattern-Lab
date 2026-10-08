@@ -189,7 +189,9 @@ def validate_stage_a(obj) -> list[str]:
     return p
 
 
-def validate_candidate(c, allowed_ids: set[str]) -> list[str]:
+def validate_candidate(c) -> list[str]:
+    """Structural problems of one candidate (empty list = fine). Unknown supporting ids are NOT a structural problem:
+    they are handled by verify_citations (amendment F0b)."""
     if not isinstance(c, dict):
         return ["candidate is not an object"]
     if set(c) != set(B_KEYS):
@@ -205,13 +207,8 @@ def validate_candidate(c, allowed_ids: set[str]) -> list[str]:
     for k in ("conditions_sequence", "information_required"):
         if not _is_str_list(c[k]) or not c[k]:
             p.append(f"{k} must be a non-empty list of strings")
-    ids = c["supporting_ids"]
-    if not _is_str_list(ids) or not ids:
+    if not _is_str_list(c["supporting_ids"]) or not c["supporting_ids"]:
         p.append("supporting_ids must be a non-empty list of strings")
-    else:
-        unknown = sorted(set(ids) - allowed_ids)
-        if unknown:
-            p.append(f"supporting_ids not found among the input descriptions: {unknown[:5]}")
     if not p:
         bad = lint_output(c)
         if bad:
@@ -219,8 +216,25 @@ def validate_candidate(c, allowed_ids: set[str]) -> list[str]:
     return p
 
 
+def verify_citations(candidates: list[dict], allowed_ids: set[str]) -> list[dict]:
+    """Amendment F0b. `allowed_ids` = the ids that were actually present in THIS call's input. For each candidate:
+    `supporting_ids` becomes the sorted DISTINCT cited ids that are in allowed_ids (the verified support); nothing is ever
+    substituted, inferred or added. What the model cited and what could not be verified is kept in the record:
+    `cited_supporting_ids` (verbatim, order and duplicates preserved) and `unverified_supporting_ids`."""
+    out = []
+    for c in candidates:
+        cited = list(c["supporting_ids"])
+        out.append({**{k: v for k, v in c.items() if k != "supporting_ids"},
+                    "supporting_ids": sorted({i for i in cited if i in allowed_ids}),
+                    "cited_supporting_ids": cited,
+                    "unverified_supporting_ids": sorted({i for i in cited if i not in allowed_ids})})
+    return out
+
+
 def validate_stage_b(obj, allowed_ids: set[str]) -> tuple[list[dict] | None, list[str]]:
-    """-> (candidates, problems). At most MAX_CANDIDATES; names unique; every candidate valid."""
+    """-> (candidates with VERIFIED support + citation audit, problems). At most MAX_CANDIDATES; unique names; every
+    candidate structurally valid; every candidate keeps at least one verified supporting id. An unknown id never rejects an
+    answer by itself."""
     if not isinstance(obj, dict) or not isinstance(obj.get("candidates"), list):
         return None, ["response must be an object with a 'candidates' list"]
     cands = obj["candidates"]
@@ -228,11 +242,17 @@ def validate_stage_b(obj, allowed_ids: set[str]) -> tuple[list[dict] | None, lis
     if len(cands) > params.MAX_CANDIDATES:
         p.append(f"at most {params.MAX_CANDIDATES} candidates are allowed; got {len(cands)}")
     for i, c in enumerate(cands):
-        p += [f"candidate {i + 1}: {x}" for x in validate_candidate(c, allowed_ids)]
+        p += [f"candidate {i + 1}: {x}" for x in validate_candidate(c)]
     names = [c.get("name") for c in cands if isinstance(c, dict)]
     if len(set(names)) != len(names):
         p.append("candidate names must be unique")
-    return (None if p else cands), p
+    if p:
+        return None, p
+    verified = verify_citations(cands, allowed_ids)
+    for i, c in enumerate(verified):
+        if not c["supporting_ids"]:
+            p.append(f"candidate {i + 1}: none of its supporting_ids is among the input descriptions")
+    return (None if p else verified), p
 
 
 def validate_audit(obj) -> list[str]:
@@ -259,7 +279,8 @@ def render_description(row: dict) -> str:
 
 
 def render_candidates(cands: list[dict]) -> str:
-    return json.dumps(cands, indent=1, sort_keys=True)
+    """Candidates as shown to the final consolidation call: the nine prompt keys only (verified supporting ids; no audit fields)."""
+    return json.dumps([{k: c[k] for k in B_KEYS} for c in cands], indent=1, sort_keys=True)
 
 
 def definition_text(c: dict) -> str:

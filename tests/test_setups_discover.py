@@ -189,7 +189,7 @@ def test_stage_b_drops_candidates_with_too_little_support_on_count_alone(tmp_pat
 
     rec = dv.run_stage_b(d, FakeText(fn), candidates_path=tmp_path / "c.json")
     assert [c["name"] for c in rec["candidates"]] == ["big_one"]
-    assert rec["dropped"][0]["name"] == "small_one" and rec["dropped"][0]["distinct_supporting_descriptions"] == 10
+    assert rec["dropped"][0]["name"] == "small_one" and rec["dropped"][0]["verified_distinct_supporting_descriptions"] == 10
 
 
 def test_stage_b_validation_retries_then_fails_loudly_and_caches_accepted_calls(tmp_path):
