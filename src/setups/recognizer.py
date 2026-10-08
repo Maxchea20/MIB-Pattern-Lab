@@ -124,7 +124,7 @@ def window_state(h, l, c, thr: dict) -> dict:
 _OPS = {"gt": lambda x, v: x > v, "ge": lambda x, v: x >= v, "lt": lambda x, v: x < v, "le": lambda x, v: x <= v}
 
 
-def recognize(ts, o, h, l, c, thr: dict, step_ns: int = 900_000_000_000) -> list[dict]:
+def recognize(ts, o, h, l, c, thr: dict, step_ns: int = 900_000_000_000, on_state=None) -> list[dict]:
     """Walk the series; return trigger events in candle order. `ts` = int64 ns open times.
 
     Triggers inside a lockout are logged with counted=False (pre-registration). Event: cand, trigger_idx, presence_start_idx, presence_len, level, invalidation_idx (None until a close breaches the
@@ -165,5 +165,7 @@ def recognize(ts, o, h, l, c, thr: dict, step_ns: int = 900_000_000_000) -> list
                     if not locked:
                         active[k] = {"event": ev, "inv": prev[k][1]}
             run[k] = run[k] + 1 if (state[k] is not None and prev[k] is not None) else (1 if state[k] is not None else 0)
+        if on_state is not None:             # read-only observer (frequency diagnostics); cannot change any decision
+            on_state(t, ok, state)
         prev, prev_ok = state, ok
     return events
