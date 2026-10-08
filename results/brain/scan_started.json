@@ -1,0 +1,8 @@
+{
+  "detector_version_sha256": "5199bd9a484ba2881c4d704403bf5bbce7eaef5a5cc00c2397e8180ab59ad5d3",
+  "database": {
+    "file": "research_binance.db",
+    "bytes": 71098368,
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f"
+  }
+}
