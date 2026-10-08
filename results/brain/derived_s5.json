@@ -1,0 +1,26 @@
+{
+  "K": 3,
+  "database": {
+    "bytes": 71098368,
+    "file": "research_binance.db",
+    "sha256": "1535c5352c56096f5e50c6ac6522715048d19c6c887548c6f5dc5f0576c27e9f"
+  },
+  "definition": "DT_C5 = (hH - c_t)/R where hH = latest confirmed swing high in the 96-candle window and hH >= c_t",
+  "discovery_end": "2026-06-01T00:00:00Z",
+  "n_positions": 26113,
+  "quantities": {
+    "DT_C5": {
+      "max": 1.0,
+      "min": 0.0,
+      "n_defined": 22142,
+      "q25": 0.07999126422363735,
+      "q33": 0.10148446840828684,
+      "q40": 0.12110216081673462,
+      "q60": 0.1897251996071065,
+      "q67": 0.22073171673105943,
+      "q75": 0.26735167108780544
+    }
+  },
+  "script_sha256": "5325e9639167f7ac97607c5dfa2fe009abd7800328e810ff4375a6756e2ef609",
+  "window": 96
+}
