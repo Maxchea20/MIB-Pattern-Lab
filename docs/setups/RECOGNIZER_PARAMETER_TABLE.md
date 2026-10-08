@@ -177,14 +177,14 @@ Frozen idea: price reaches a recent high/upper range, fails to continue, retrace
 
 | | Rule |
 |---|---|
-| Conditions | **F1** `SH*` recent (`jH ≥ t−47`) with `(hH − min low over W)/R ≥ 2/3` ("recent high or upper range"). **F2** no close above `hH` since `jH` ("failed to continue higher"); `c_t < hH`. **F3** `UP > q33(UP)` and `RET > q33(RET)` ("retrace part of the prior rise"). **F4** `DF(PBL) ≤ q33(DF_C6)` ("toward nearby support"). |
+| Conditions | **F1** `SH*` recent (`jH ≥ t−47`) with `(hH − min low over W)/R ≥ 2/3` ("recent high or upper range"). **F2** no close above `hH` since `jH` ("failed to continue higher"); `c_t < hH`. **F3** `UP > q33(UP)` and `q33(RET) < RET ≤ 1.0` ("retrace part of the prior rise"; the upper bound is J-14). **F4** `DF(PBL) ≤ q33(DF_C6)` ("toward nearby support"). |
 | Presence | F1 ∧ F2 ∧ F3 ∧ F4. |
 | Trigger | `c_{t′} < PBL_{t′−1}`. |
 | Invalidation | the first close `> hH` ("above the recent high or reclaim area of the rejected top"). |
 | Invariant | a high in the upper part of the window; no continuation above it; a partial retracement of the prior rise; price near the pullback low. |
 | Allowed variation | retracement above the "small" band; proximity inside the "near" band; the high anywhere in the top third of the window. |
-| Forbidden variation | a high in the lower/middle window; a close above the high; no retracement; the pullback low already broken. |
-| Numeric tolerance | `RET > q33`, `DF_C6 ≤ q33`, high at ≥ 2/3 of the window range. |
+| Forbidden variation | a high in the lower/middle window; a close above the high; no retracement; a retracement beyond the start of the prior rise (`RET > 1`, J-14); the pullback low already broken. |
+| Numeric tolerance | `q33 < RET ≤ 1.0`, `DF_C6 ≤ q33`, high at ≥ 2/3 of the window range. |
 | Not coded (ledger) | J-3: "or the zero line". J-4: "nearest short-term support", "pullback low", "consolidation floor" are one level, the pullback low `PBL` (named by "retrace … toward nearby support"). J-10: "rejection" has no separate candle-shape rule beyond F2–F3. |
 | **Verdict** | **CODEABLE** (with J-3, J-4, J-10) |
 
@@ -259,6 +259,7 @@ Each is made on structural grounds only. Any you reject must be replaced by an a
 | J-11 | The trigger is the very next candle that closes beyond the level while presence held on the previous candle | wait several candles | C1–C8 |
 | J-12 | Distances use the 96-candle range at the decision candle | another normaliser | C1–C8 |
 | J-13 | OR-chains are coded literally and permissively (C8 I1/I2) | require one specific alternative | C8 |
+| J-14 | **Approved after the derivation was seen.** "Retraces *part of* the prior rise" means the retracement does not exceed the rise's starting point: `RET ≤ 1.0`. The lower threshold `q33(RET)` is unchanged. Disclosed: this was decided after seeing that `RET > q33` alone (q33 ≈ 0.69) admitted retracements above 100 % (about 40 % of positions have `RET > 1`); it is a reading of the frozen words, not a response to any outcome (none has been computed). C6 stays CODEABLE. | `RET > q33` with no upper bound; declare C6 not codeable | C6 |
 
 ## 9. Planned tests (to be written with the recognizer; none exists yet)
 
