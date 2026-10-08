@@ -1,4 +1,8 @@
-# Experiment 4 — Setup Brain (detect → fire → observe). PLAN, pre-coding. Nothing is built or frozen yet.
+# Experiment 4 — Setup Brain (detect → fire → observe). PLAN.
+
+**Update after review (decisions by the reviewer):** S5 IS TRANSLATED (J-15: the breakout level is the previous *confirmed* 15m swing high that the spike breaks above; "holds above" = no completed 15m close back below it; Experiment 3's `K = 3` confirmed-swing convention, no look-ahead) — see `DETECTOR_TRANSLATIONS.md`. S9 translation approved (J-16). Nine active detectors. In-sample 2025-09-01 → 2026-05-31 and unseen 2026-06-01 → 2026-09-28 are both scanned and reported separately; the unseen period is never used to modify a detector. A FIRE = the first completed candle whose close is beyond the operative level with presence on the previous candle; no lockout, suppression or priority. Detectors are frozen (hash) before any scan. Zero simulated trades. Section 3's "S5 not translated by default" below is superseded by this paragraph.
+
+Original pre-coding text follows.
 
 Experiment 3 is closed and immutable. This is a NEW experiment (id `brain_15m_v1`); nothing under `src/setups/`, `results/setups/`,
 `docs/setups/` or the F0–F1 locks is modified. No qualification gates (frequency, fidelity, occurrence minimums, hold-out qualification,
