@@ -1,4 +1,4 @@
-# Experiment 5 — Trend + RSI, as the trader actually trades it. CHARTER DRAFT for review. Nothing is frozen, built or tested.
+# Experiment 5 — Trend + RSI, as the trader actually trades it. CHARTER (approved by the trader: "Go ahead"). Rules are implemented in `src/trendrsi/` and frozen by `docs/trend_rsi/FREEZE.json` before the untouched data is analysed.
 
 **Purpose.** Write the trader's discretionary method down as rules, test the *written* version once on data nobody has looked at, and stop if it does not survive costs.
 It cannot test the trader's "gut"; it tests only what can be written down. A negative result is a result.
