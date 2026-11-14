@@ -29,7 +29,7 @@ OUT = Path("data/ext")
 
 
 def month_starts(start: str, end: dt.date):
-    y, m = map(int, start.split("-"))
+    y, m = map(int, start.split("-")[:2])      # accepts YYYY-MM or YYYY-MM-DD
     while (y, m) <= (end.year, end.month):
         yield y, m
         y, m = (y + 1, 1) if m == 12 else (y, m + 1)
@@ -109,7 +109,7 @@ def build(urls: list[str], getter=fetch) -> tuple[list[tuple], list[str]]:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--symbol", default="BTCUSDT")
-    ap.add_argument("--start", required=True, help="first month, YYYY-MM")
+    ap.add_argument("--start", required=True, help="first month, YYYY-MM (a full date is accepted; only the month is used)")
     ap.add_argument("--end", required=True, help="last day, YYYY-MM-DD (UTC)")
     ap.add_argument("--intervals", nargs="+", default=["15m", "1h", "4h", "1d"], choices=sorted(STEP_MS))
     ap.add_argument("--out", default=str(OUT))

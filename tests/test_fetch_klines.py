@@ -57,3 +57,9 @@ def test_the_tool_has_no_account_or_order_code():
     src = Path(fk.__file__).read_text(encoding="utf-8").lower()
     for bad in ("api_key", "secret", "create_order", "signature", "x-mbx"):
         assert bad not in src
+
+
+def test_start_accepts_a_month_or_a_full_date():
+    a = fk.plan("BTCUSDT", "1h", "2026-10", dt.date(2026, 10, 31))
+    b = fk.plan("BTCUSDT", "1h", "2026-10-01", dt.date(2026, 10, 31))
+    assert a == b and len(a) == 1
