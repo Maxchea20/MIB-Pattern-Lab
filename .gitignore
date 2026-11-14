@@ -32,3 +32,6 @@ results/exp5m/**/charts/
 
 # Setup Discovery: generated chart images stay local (sample list, descriptions and records are small and committed)
 results/setups/**/charts/
+
+# Extended public Binance kline downloads (research input, large; never commit)
+data/ext/
