@@ -35,3 +35,4 @@ results/setups/**/charts/
 
 # Extended public Binance kline downloads (research input, large; never commit)
 data/ext/
+data/ext_old/
