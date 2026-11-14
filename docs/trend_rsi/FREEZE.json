@@ -1,0 +1,22 @@
+{
+  "code_and_charter_sha256": {
+    "docs/trend_rsi/CHARTER_DRAFT.md": "7feb3dc48c49b82aea0f7de1ddfdc51e4824b99480f0230104b3be65deeed22f",
+    "src/trendrsi/indicators.py": "ce5cb94c9cf5979d8d5a8e362f5ca9e1e249eae61dcb3bfae85edf95a1593be7",
+    "src/trendrsi/params.py": "6bbe9f708914058c5bb98d28ca7937dfbcd1e9c8815279056830b766ba06289e",
+    "src/trendrsi/run.py": "7649fb50aae9ee517b9c0f3e17e94ce92c56dfd0dc11cb27bf1fe4920e24c87f",
+    "src/trendrsi/signals.py": "05e6fb098af123b061281318bbc02e1df7b8253eef67bb1b6c057529fe4694c1",
+    "src/trendrsi/study.py": "07f4e6ba46a2b90132472e6afb3d30554040001e42abb06709a6fe500d4cde6e"
+  },
+  "data_files_sha256": {
+    "BTCUSDT-15m.csv.gz": "37dca4da4ffab591276bc40251073e97391bd06a4ed2c08684b0a80bdc87a2ca",
+    "BTCUSDT-1d.csv.gz": "2b91d2edc61d1973cde69dbe955f60d54b06bdbe1c45f330d56e14ad9bf53a56",
+    "BTCUSDT-4h.csv.gz": "614a1ae5ecd68c09e8001c5542ec3bd1c3e722ea1d79b9a1ee08030e75a91c6b"
+  },
+  "experiment": "trend_rsi_v1",
+  "rules": [
+    "rules and numbers fixed before the untouched data is analysed; none is tuned",
+    "the untouched data is analysed once; the stop rule of the charter is applied mechanically",
+    "event study only: no order, no fill, no trade (REAL FILLS ONLY)"
+  ],
+  "version_sha256": "0f4afa6d97d2d5f5beaed35fad0814305b4f3e99a6ab4cbbdb0c776a7ae7b8eb"
+}
